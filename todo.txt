@@ -1,0 +1,3 @@
+1 - Interest entry modal total pending amount
+2 - Settlement entry commission amount showing wrong
+3 - transactions flag = 1 when loan entry
