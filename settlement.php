@@ -176,7 +176,8 @@ if ($_GET['date']) {
 
                             </div>
                             <div class="card-footer " style="text-align: center">
-                                <button type="submit" class="btn btn-primary">SUBMIT</button>
+                                <table align=center><tr><td>                                Settlement Date:</td><td> <input type="date" style="width: 200px; " class="form-control" name="settlement_date" value="<?=date("Y-m-d")?>" /></td>
+<td>                                <button type="submit" class="btn btn-primary">SUBMIT</button></td></tr></table>
                             </div>
 
                             <!-- /.card-body -->

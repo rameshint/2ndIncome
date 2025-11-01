@@ -13,7 +13,7 @@ if (isset($_POST)) {
     $settlementObj = new settlement();
     $transactionObj = new transactions();
     $recoverableObj = new recoverables();
-	
+	$settlement_date = $_POST['settlement_date'];
 	
     foreach ($_POST['lender_interest'] as $loanid => $interest) {
         if($_POST['total'][$loanid] > 0) {
@@ -23,7 +23,7 @@ if (isset($_POST)) {
                 'recovery' => $_POST['recovery'][$loanid],
                 'commission' => $_POST['commission'][$loanid],
                 'excess' => $_POST['excess'][$loanid],
-                'settlement_date' => date("Y-m-d")
+                'settlement_date' => $settlement_date
             ];
             $settlementObj->save($params);
         }
