@@ -112,4 +112,14 @@ GROUP BY upper(DATE_FORMAT(transaction_date,'%b')),transaction_type";
                ) v GROUP BY v.roi  ";
 		return $db->query($sql)->results();
 	}
+
+    public function getInterestCollectedTrend(){
+        global $db;
+        $sql = "SELECT date_format(t.transaction_date, '%Y-%b') month, SUM(amount) interest 
+                FROM transactions t 
+                WHERE t.transaction_type = 'I' AND t.waiver = 0 AND t.behalf_of = 0 
+                AND t.transaction_date > LAST_DAY(date_sub(CURRENT_DATE(), INTERVAL 365 DAY))
+                GROUP BY date_format(t.transaction_date, '%Y-%b')";
+        return $db->query($sql)->results();
+    }
 }

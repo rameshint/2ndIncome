@@ -58,6 +58,27 @@ if($_POST['widget'] == 'current_balance'){
 
     header('Content-Type: application/json');
     echo json_encode($details);
+}else if($_POST['widget'] == 'interest_collected_trend'){
+    $data = $dashboardObj->getInterestCollectedTrend();
+    $details = [];
+    
+    // Create array indexed by month for easy lookup
+    $monthlyData = [];
+    foreach($data as $d){
+        $monthlyData[$d->month] = floatval($d->interest);
+    }
+
+    $dataPoints = array();
+    
+    // Generate last 12 months labels and data
+    for($i = 11; $i >= 0; $i--){
+        $monthKey = date("Y-M", strtotime(date("Y-m-01"). "-$i month"));
+        $dataPoints['labels'][] = $monthKey;
+        $dataPoints['data'][] = isset($monthlyData[$monthKey]) ? $monthlyData[$monthKey] : 0;
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode($dataPoints);
 }
 
 

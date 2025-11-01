@@ -161,32 +161,21 @@ $color =  $colors[array_rand($colors)];
                     <!-- /.card-header -->
                     <div class="card-body" style="padding: 0px !important;">
 
-                            <table class=" w-100 table-striped display" id="example" cellpadding="3">
+                            <table class="w-100 table-striped display" id="example" cellpadding="3">
                                 <thead>
-                                    <tr><th>#</th><th  width="8%">Txn Date</th><th  width="8%">Bank Date</th><th>Narration</th><th width="8%">Credit</th><th width="8%">Debit</th><th width="8%">Balance</th></tr>
-                                </thead>
-                            <?php
-                            $transactions = (new lenders())->fetchAllTransactions($_GET['id']);
-                            foreach ($transactions as $transaction) {
-                                ?>
                                     <tr>
-                                    <td><?=$transaction->id?></td>
-                                    <td><?=date( 'Y-m-d', strtotime($transaction->txn_date))?></td>
-                                    <td><?=date( 'd/m/y', strtotime($transaction->bank_date))?></td>
-                                    <td><?= $transaction->description?></td>
-                                            <?php
-                                            if($transaction->transaction_type == 'C'){
-                                                echo '<td align="right">'.$transaction->amount.'</td><td></td>';
-                                            }else{
-                                                echo '<td></td><td align="right">'.$transaction->amount.'</td>';
-                                            }
-                                            ?>
-                                        <td align="right"><?=$transaction->current_balance?></td>
-                                        </tr>
-
-                                <?php
-                            }
-                            ?>
+                                        <th>#</th>
+                                        <th width="8%">Txn Date</th>
+                                        <th width="8%">Bank Date</th>
+                                        <th>Narration</th>
+                                        <th width="8%">Credit</th>
+                                        <th width="8%">Debit</th>
+                                        <th width="8%">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Data will be loaded via AJAX -->
+                                </tbody>
                             </table>
 
                     </div>
@@ -223,8 +212,44 @@ function ExcelDateToJSDate(serial) {
 }
 $(document).ready(function(){
 
-    $("#example").DataTable({
+    // Initialize DataTable
+    var transactionTable = $("#example").DataTable({
+        processing: true,
+        serverSide: true,
         order: [[0, 'desc']],
+        ajax: {
+            url: 'get_lender_transactions.php',
+            type: 'POST',
+            data: {
+                lender_id: <?=$_GET['id']?>
+            }
+        },
+        columns: [
+            { data: 0, name: 'id' },
+            { data: 1, name: 'txn_date' },
+            { data: 2, name: 'bank_date' },
+            { data: 3, name: 'description' },
+            { data: 4, name: 'credit', className: 'text-right' },
+            { data: 5, name: 'debit', className: 'text-right' },
+            { data: 6, name: 'balance', className: 'text-right' }
+        ],
+        pageLength: 25,
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        language: {
+            processing: "Loading transactions...",
+            emptyTable: "No transactions found",
+            info: "Showing _START_ to _END_ of _TOTAL_ transactions",
+            infoEmpty: "Showing 0 to 0 of 0 transactions",
+            infoFiltered: "(filtered from _MAX_ total transactions)"
+        }
+    });
+
+    // Handle form submissions to refresh table after adding transactions
+    $('#investment_form').on('submit', function(e) {
+        // Allow form to submit normally, but refresh table after page reload
+        setTimeout(function() {
+            transactionTable.ajax.reload();
+        }, 100);
     });
 
 	$("#debit-btn").on("click", function(){

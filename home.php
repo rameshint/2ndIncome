@@ -169,6 +169,46 @@ include 'header.php';
             <!-- ./col -->
         </div>
         <!-- /.row -->
+         <!-- Interest Collected Trend Chart Row -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="d-flex justify-content-between">
+                            <h3 class="card-title">Interest Collected Trend (Last 12 Months)</h3>
+                            <a href="javascript:void(0);">View Report</a>
+                        </div>
+                    </div>
+                    <div class="card-body" style="height:400px;">
+                        <div class="d-flex ">
+                            <p class="d-flex flex-column">
+                                <span class="text-bold text-lg" id="total-interest-collected">0.00</span>
+                                <span>Total Interest Collected (12 Months)</span>
+                            </p>
+                            <p class="ml-auto d-flex flex-column text-right">
+                                <span class="text-success" id="interest-growth">
+                                    <i class="fas fa-arrow-up"></i> 0%
+                                </span>
+                                <span class="text-muted">Since last month</span>
+                            </p>
+                        </div>
+                        <!-- /.d-flex -->
+
+                        <div class="position-relative mb-4">
+                            <canvas id="interest-trend-chart" height="200"></canvas>
+                        </div>
+
+                        <div class="d-flex flex-row justify-content-end">
+                            <span class="mr-2">
+                                <i class="fas fa-square text-success"></i> Interest Collected
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.card -->
+            </div>
+        </div>
+        <!-- /.row -->
         <!-- Main row -->
         <div class="row">
             <div class="col-lg-4 "  >
@@ -285,6 +325,9 @@ include 'header.php';
             </div>
         </div>
         <!-- /.row (main row) -->
+        
+        
+        
     </div><!-- /.container-fluid -->
 </section>
 <!-- /.content -->
@@ -294,7 +337,7 @@ include 'footer.php';
 ?>
 <script src="plugins/chart.js/Chart.min.js"></script>
 <script src="dist/js/pages/dashboard3.js"></script>
-<script type="text/javascript" src="https://cdn.canvasjs.com/jquery.canvasjs.min.js"></script>
+<script type="text/javascript" src="dist/js/jquery.canvasjs.min.js"></script>
 <script type="text/javascript">
     $(document).ready(function () {
         $.ajax({
@@ -429,6 +472,135 @@ include 'footer.php';
             },
             error: function (jqXhr, textStatus, errorThrown) {
                 console.log(errorThrown);
+            }
+        })
+
+        // Interest Collected Trend Chart
+        $.ajax({
+            url: 'dashboard_ajax.php',
+            type: 'post',
+            data: {"widget": 'interest_collected_trend'},
+            success: function (data, textStatus, jQxhr) {
+                // Calculate total interest and growth
+                let totalInterest = data.data.reduce((sum, val) => sum + parseFloat(val), 0);
+                let currentMonth = data.data[data.data.length - 1] || 0;
+                let previousMonth = data.data[data.data.length - 2] || 0;
+                let growth = previousMonth > 0 ? ((currentMonth - previousMonth) / previousMonth * 100).toFixed(1) : 0;
+                
+                // Update summary values
+                $('#total-interest-collected').text(totalInterest.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }));
+                
+                // Update growth indicator
+                let growthElement = $('#interest-growth');
+                if (growth > 0) {
+                    growthElement.html('<i class="fas fa-arrow-up"></i> ' + growth + '%').removeClass('text-danger').addClass('text-success');
+                } else if (growth < 0) {
+                    growthElement.html('<i class="fas fa-arrow-down"></i> ' + Math.abs(growth) + '%').removeClass('text-success').addClass('text-danger');
+                } else {
+                    growthElement.html('<i class="fas fa-minus"></i> 0%').removeClass('text-success text-danger').addClass('text-muted');
+                }
+
+                // Create the chart
+                var ctx = document.getElementById('interest-trend-chart').getContext('2d');
+                
+                var interestTrendChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Interest Collected',
+                            data: data.data,
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#28a745',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        animation: {
+                            onComplete: function() {
+                                var chartInstance = this;
+                                var ctx = chartInstance.chart.ctx;
+                                ctx.font = "bold 10px Arial";
+                                ctx.fillStyle = "#28a745";
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'bottom';
+
+                                this.data.datasets.forEach(function(dataset, i) {
+                                    var meta = chartInstance.getDatasetMeta(i);
+                                    meta.data.forEach(function(bar, index) {
+                                        var data = dataset.data[index];
+                                        if (data > 0) {
+                                            var label = '₹' + Math.round(data).toLocaleString('en-IN');
+                                            ctx.fillText(label, bar._model.x, bar._model.y - 5);
+                                        }
+                                    });
+                                });
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '₹' + value.toLocaleString('en-IN');
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0,0,0,0.1)'
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        },
+                        elements: {
+                            point: {
+                                hoverBackgroundColor: '#28a745'
+                            }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
+                        plugins: {
+                            tooltip: {
+                                backgroundColor: 'rgba(0,0,0,0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                callbacks: {
+                                    label: function(context) {
+                                        return 'Interest: ₹' + context.parsed.y.toLocaleString('en-IN', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            },
+            error: function (jqXhr, textStatus, errorThrown) {
+                console.log('Error loading interest trend:', errorThrown);
             }
         })
     })

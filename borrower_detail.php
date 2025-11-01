@@ -70,36 +70,76 @@ $color = $colors[array_rand($colors)];
                         </div>
                     </div>
                     <div class="card-footer p-0">
-                        <ul class="nav flex-column">
+                        <table class="table table-bordered w-100 mb-0">
+                            <tr>
+                                <th>Loan Amount</th>
+                                <td class="text-right">
+                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow) ?></span>
+                                </td>
+                            <th>Loan Pending</th>
+                                <td class="text-right">
+                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow - $total_loans->loan_paid) ?></span>
+                                </td>
+                                
+                            </tr>
+                            <tr>
+                                    <th>Loan Paid</th>
+                                <td class="text-right">
+                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_paid) ?></span>
+                                </td>
+                                <th>Interest Pending</th>
+                                <td class="text-right">
+                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid) ?></span>
+                                </td>
+                                
+                            </tr>
+                            <tr>
+                                <th>Interest Paid</th>
+                                <td class="text-right">
+                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->interest_paid) ?></span>
+                                </td>
+                                <th>Pending Amount till date</th>
+                                <td class="text-right">
+                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid)) ?></span>
+                                </td>
+                            </tr>
+                        </table>
+                        <ul class="nav flex-column " style="display: none;">
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <span class="nav-link">
                                     Loan Amount <span
                                             class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow) ?></span>
-                                </a>
+                                </span>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <span class="nav-link">
                                     Loan Paid <span
                                             class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_paid) ?></span>
-                                </a>
+                                </span>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <span class="nav-link">
                                     Loan Pending <span
                                             class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow - $total_loans->loan_paid) ?></span>
-                                </a>
+                                </span>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <span class="nav-link">
                                     Interest Paid <span
                                             class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->interest_paid) ?></span>
-                                </a>
+                                </span>
                             </li>
                             <li class="nav-item">
-                                <a href="#" class="nav-link">
+                                <span class="nav-link">
                                     Interest Pending <span
                                             class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid) ?></span>
-                                </a>
+                                </span>
+                            </li>
+                            <li class="nav-item">
+                                <span class="nav-link">
+                                    Pending Amount till date <span
+                                            class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid)) ?></span>
+                                </span>
                             </li>
                         </ul>
                     </div>

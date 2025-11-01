@@ -73,4 +73,53 @@ GROUP BY l.id
             from investments where lenderid ='.$lenderid. ' order by id desc';
         return $db->query($sql);
     }
+
+    public function fetchTransactionsForDataTable($lenderId, $start, $length, $searchValue, $orderColumn, $orderDirection){
+        global $db;
+        
+        $sql = 'SELECT id, amount, transaction_type, txn_date, bank_date, description, 
+                CASE WHEN transaction_type = "C" THEN current_balance + amount 
+                     ELSE current_balance - amount END as current_balance  
+                FROM investments 
+                WHERE lenderid = ' . $lenderId;
+        
+        // Add search condition if search value is provided
+        if (!empty($searchValue)) {
+            $sql .= ' AND (description LIKE "%' . $searchValue . '%" 
+                          OR amount LIKE "%' . $searchValue . '%"
+                          OR DATE_FORMAT(txn_date, "%Y-%m-%d") LIKE "%' . $searchValue . '%"
+                          OR DATE_FORMAT(bank_date, "%d/%m/%y") LIKE "%' . $searchValue . '%")';
+        }
+        
+        // Add ordering
+        $sql .= ' ORDER BY ' . $orderColumn . ' ' . $orderDirection;
+        
+        // Add pagination
+        $sql .= ' LIMIT ' . $start . ', ' . $length;
+        
+        return $db->query($sql)->results();
+    }
+
+    public function getTotalTransactions($lenderId){
+        global $db;
+        $sql = 'SELECT COUNT(*) as total FROM investments WHERE lenderid = ' . $lenderId;
+        $result = $db->query($sql)->results();
+        return $result[0]->total;
+    }
+
+    public function getFilteredTransactions($lenderId, $searchValue){
+        global $db;
+        
+        $sql = 'SELECT COUNT(*) as total FROM investments WHERE lenderid = ' . $lenderId;
+        
+        if (!empty($searchValue)) {
+            $sql .= ' AND (description LIKE "%' . $searchValue . '%" 
+                          OR amount LIKE "%' . $searchValue . '%"
+                          OR DATE_FORMAT(txn_date, "%Y-%m-%d") LIKE "%' . $searchValue . '%"
+                          OR DATE_FORMAT(bank_date, "%d/%m/%y") LIKE "%' . $searchValue . '%")';
+        }
+        
+        $result = $db->query($sql)->results();
+        return $result[0]->total;
+    }
 }

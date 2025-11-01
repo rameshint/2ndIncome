@@ -91,7 +91,7 @@ $result = $reportObj->consolidate_report();
 
                     <div class="card-body">
                         <table class="table table-striped table-bordered" cellpadding="2">
-                        <thead><tr style="text-align:center"><th>Date</th><th>Loan</th><th>ROI</th><th>Paid</th><th>Balance</th><th>Interest</th></tr></thead>
+                        <thead><tr style="text-align:center"><th>Lender</th><th>Date</th><th>Loan</th><th>ROI</th><th>Paid</th><th>Balance</th><th>Interest</th></tr></thead>
                             <tbody>
                             <?php
                             
@@ -105,7 +105,7 @@ $result = $reportObj->consolidate_report();
                                 if ($borrower !== NULL && $borrower != $row->borrower){
                                     
                                     echo '<tr style="font-weight:bold">
-                                        <td>Total</td>
+                                        <td colspan=2>Total</td>
                                         <td align=right>'.CurrencyFormat($loan).'</td>
                                         <td></td>
                                         <td align=right>'.CurrencyFormat($paid).'</td>
@@ -122,6 +122,7 @@ $result = $reportObj->consolidate_report();
                                     echo '<tr><th colspan=6>'.$row->borrower.'</th></tr>';
                                 }
                                 echo '<tr>
+                                        <td>'.$row->lender.'</td>
                                         <td>'.$row->opening_date.'</td>
                                         <td align=right>'.CurrencyFormat($row->amount).'</td>
                                         <td align=right>'.$row->roi.'</td>

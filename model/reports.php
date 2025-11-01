@@ -203,8 +203,9 @@ interests AS (SELECT id loanid, tot_int, interest, tot_int - ifnull(interest,0) 
                 WHERE  l.`status` = 1 and l.opening_date <= CURRENT_DATE 
 					 GROUP BY l.id
 ) c  WHERE c.tot_int - c.interest > 10)
-SELECT l.id,  b.name borrower,b.primary_contact_no, l.opening_date, l.interest_value roi,  l.amount, ifnull(s.amount,0) paid_amount, l.amount- ifnull(s.amount,0) pending_loan, ifnull(i.pending_interest,0) pending_interest FROM loans l 
+SELECT l.id, a.name lender, b.name borrower,b.primary_contact_no, l.opening_date, l.interest_value roi,  l.amount, ifnull(s.amount,0) paid_amount, l.amount- ifnull(s.amount,0) pending_loan, ifnull(i.pending_interest,0) pending_interest FROM loans l 
 INNER JOIN borrowers b ON b.id = l.borrowerid
+INNER JOIN lenders a ON a.id = l.lenderid
 LEFT JOIN loan_settle s ON s.loanid = l.id 
 LEFT JOIN interests i ON i.loanid = l.id
 WHERE l.`status` = 1 AND (l.amount- ifnull(s.amount,0) >0 OR  ifnull(i.pending_interest,0) > 10)
