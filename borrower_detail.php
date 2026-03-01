@@ -76,9 +76,9 @@ $color = $colors[array_rand($colors)];
                                 <td class="text-right">
                                     <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow) ?></span>
                                 </td>
-                            <th>Loan Pending</th>
+                                <th>Loan Pending</th>
                                 <td class="text-right">
-                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow - $total_loans->loan_paid) ?></span>
+                                    <span class="badge bg-<?= $color ?> text-md loan-pending"><?= CurrencyFormat($total_loans->loan_borrow - $total_loans->loan_paid) ?></span>
                                 </td>
                                 
                             </tr>
@@ -89,7 +89,7 @@ $color = $colors[array_rand($colors)];
                                 </td>
                                 <th>Interest Pending</th>
                                 <td class="text-right">
-                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid) ?></span>
+                                    <span class="badge bg-<?= $color ?> text-md interest-pending"><?= CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid) ?></span>
                                 </td>
                                 
                             </tr>
@@ -98,9 +98,9 @@ $color = $colors[array_rand($colors)];
                                 <td class="text-right">
                                     <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->interest_paid) ?></span>
                                 </td>
-                                <th>Pending Amount till date</th>
+                                <th>Pending Amount till date<i onClick="copyPendingAmount()" class="fa fa-copy interest-copy" style="cursor:pointer; float:right"></i></th>
                                 <td class="text-right">
-                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid)) ?></span>
+                                    <span class="badge bg-<?= $color ?> text-md pending-amount"><?= CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid)) ?></span>
                                 </td>
                             </tr>
                         </table>
@@ -370,7 +370,7 @@ $color = $colors[array_rand($colors)];
                         </div>
                     </div>
                     <div class="modal fade" id="modal-loan">
-                        <div class="modal-dialog">
+                        <div class="modal-dialog modal-lg">
                             <div class="modal-content">
 
                                 <div class="modal-header">
@@ -385,7 +385,7 @@ $color = $colors[array_rand($colors)];
                                     <div class="modal-body">
                                         <table width="100%">
                                             <tr>
-                                                <td width="50%">
+                                                <td width="33.66%">
                                                     <div class="form-group">
                                                         <label for="exampleInputAmount">Lender</label>
                                                         <select name="lenderid" id="loan-lenderid" class="form-control" required>
@@ -399,11 +399,18 @@ $color = $colors[array_rand($colors)];
                                                         </select>
                                                     </div>
                                                 </td>
-                                                <td>
+                                                <td width="33.66%">
                                                     <div class="form-group">
                                                         <label for="loan-amount">Amount</label>
                                                         <input type="number" name="amount" class="form-control"
                                                                required id="loan-amount">
+                                                    </div>
+                                                </td>
+                                                <td width="33.66%">
+                                                    <div class="form-group">
+                                                        <label for="loan-interest_to_loan-to-loan">Interest to Loan</label>
+                                                        <input type="checkbox" name="interest_loan" class="form-control"
+                                                             value="1"  required id="loan-interest_to_loan-to-loan">
                                                     </div>
                                                 </td>
                                             </tr>
@@ -417,7 +424,7 @@ $color = $colors[array_rand($colors)];
                                         </table>
 
 
-                                        <table>
+                                        <table width="100%">
                                             <tr>
                                                 <td width="33.66%">
                                                     <div class="form-group">
@@ -534,6 +541,13 @@ include 'footer.php';
 
 <script type="text/javascript">
 
+    function copyPendingAmount(){
+        var loanPending = $('.loan-pending').text().trim();
+        var interestPending = $('.interest-pending').text().trim();
+        var pendingAmount = $('.pending-amount').text().trim();
+        
+        navigator.clipboard.writeText('Loan       : '+loanPending+'\nInterest  : '+interestPending+'\nTotal       : '+pendingAmount);
+    }                                    
     function clearLoanForm(){
         formEl = $("#loan_form");
         curDate = $.datepicker.formatDate('yy-m-d', new Date());

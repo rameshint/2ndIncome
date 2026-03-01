@@ -1,13 +1,13 @@
 <?php
-include_once 'model/borrowers.php';
-require_once 'config.ini.php';
-$borrowerObj = new borrowers();
-$borrowerid = intval($_REQUEST['borrowerid']);
-$date = $_REQUEST['date'];
-$loans = $borrowerObj->fetchPendingInterest($borrowerid, $date);
+    include_once 'model/borrowers.php';
+    require_once 'config.ini.php';
+    $borrowerObj = new borrowers();
+    $borrowerid  = intval($_REQUEST['borrowerid']);
+    $date        = $_REQUEST['date'];
+    $loans       = $borrowerObj->fetchPendingInterest($borrowerid, $date);
 
 ?>
-<input type="hidden" name="date" value="<?=$date?>" />
+<input type="hidden" name="date" value="<?php echo $date ?>" />
 <table width="100%">
     <tr>
         <td width="50%">
@@ -43,11 +43,16 @@ $loans = $borrowerObj->fetchPendingInterest($borrowerid, $date);
 </div>
     </div>
     <div class="col-3">
-<div class="form-check">
-    <input type="checkbox" name="waiver" class="form-check-input"  id="waiver" value="1">
-    <label class="form-check-label" for="waiver"> Waiver  </label>
-
-</div>
+        <div class="form-check">
+        <input type="checkbox" name="waiver" class="form-check-input"  id="waiver" value="1">
+        <label class="form-check-label" for="waiver"> Waiver  </label>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="form-check">
+        <input type="checkbox" name="converted_to_loan" class="form-check-input"  id="converted_to_loan" value="1">
+        <label class="form-check-label" for="converted_to_loan"> Converting to Loan  </label>
+        </div>
     </div>
 </div>
 <table class=" table-striped" cellpadding="5">
@@ -63,8 +68,8 @@ $loans = $borrowerObj->fetchPendingInterest($borrowerid, $date);
     </thead>
     <tbody>
     <?php
-    foreach ($loans as $loan) {
-        echo '<tr>
+        foreach ($loans as $loan) {
+            echo '<tr>
                 <td>' . $loan->lender . '</td>
                 <td style="text-align: right">' . number_format($loan->amount) . '</td>
                 <td style="text-align: right">' . number_format($loan->amount - $loan->settled) . '</td>
@@ -72,19 +77,19 @@ $loans = $borrowerObj->fetchPendingInterest($borrowerid, $date);
                 <td><input style="text-align: center" type="number" step="any" name="loanid[' . $loan->id . ']"  class="form-control loan-input" > </td>
 				<td><i class="fa fa-copy interest-copy" style="cursor:pointer"></i></td>
             </tr>';
-        $amount += $loan->amount;
-        $settled += $loan->settled;
-        $interest += $loan->interest;
+            $amount   += $loan->amount;
+            $settled  += $loan->settled;
+            $interest += $loan->interest;
 
-    }
+        }
     ?>
     </tbody>
     <tfoot>
     <tr>
         <th style="text-align:right">Total Interest</th>
-        <th style="text-align:right" class="text-md"><?=number_format($amount)?></th>
-        <th style="text-align:right" class="text-md"><?=number_format($amount - $settled)?></th>
-        <th style="text-align:right" class="text-md"><?=number_format($interest)?></th>
+        <th style="text-align:right" class="text-md"><?php echo number_format($amount) ?></th>
+        <th style="text-align:right" class="text-md"><?php echo number_format($amount - $settled) ?></th>
+        <th style="text-align:right" class="text-md"><?php echo number_format($interest) ?></th>
         <th id="total-interest" style="text-align:center" class="text-md"></th>
 		<th><i class="fa fa-copy interest-copy-total" style="cursor:pointer"></i></th>
     </tr>

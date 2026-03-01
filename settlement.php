@@ -1,11 +1,13 @@
 <?php
 include_once 'header.php';
 include_once 'model/transactions.php';
+include_once 'model/borrowers.php';
 if ($_GET['date']) {
     $transactionObj = new transactions();
     $loans = $transactionObj->fetchLoans($_GET['date']);
     $transactions = $transactionObj->fetchUnSettledTransactions($_GET['date']);
 }
+$borrowers = (new borrowers())->fetchall();
 ?>
 <section class="content">
     <div class="container-fluid">
@@ -14,8 +16,29 @@ if ($_GET['date']) {
                 <form>
                     <table class="table table-striped w-50 ">
                         <tr>
+                            <th>Select Date</th>
                             <td><input type="date" id="interest_cal_date" name="date" class="form-control"
                                        value="<?php echo($_GET['date'] != '' ? $_GET['date'] : date("Y-m-d")) ?>"></td>
+                                       <th>Select Borrower</th>
+                                       <td>
+                                       <select style="width:100px" name="filter_condition" class="form-control">
+                                           <option value="IN" <?=($_GET['filter_condition'] == 'IN' ? 'selected' : '')?>>IN</option>
+                                           <option value="NOT IN" <?=($_GET['filter_condition'] == 'NOT IN' ? 'selected' : '')?>>NOT IN</option>
+                                           </select>
+</td><td>
+                                           
+                                       <select style="width:300px" name="borrowers[]" class="form-control" multiple><option value="">All</option>
+                                       <?php                       
+                                       
+                                        foreach($borrowers as $borrower){
+                                             $selected = '';
+                                             if(in_array($borrower->id, $_GET['borrowers'] ?? [])){
+                                                  $selected = 'selected';
+                                             }
+                                             echo '<option value="'.$borrower->id.'" '.$selected.'>'.$borrower->name.'</option>';
+                                        }
+                                       ?>
+                                       </select></td>
                             <td>
                                 <button class="form-control btn btn-primary" onclick="fetchPendingInterest()">
                                     Submit
@@ -44,21 +67,24 @@ if ($_GET['date']) {
                                 <table class="table-striped w-100" cellpadding="5">
                                     <tr>
                                         <td>LoanId</td>
+                                        <th>#</th>
                                         <th>Borrower</th>
+                                        <th>Txn Date<th>
                                         <th style="text-align:right">Loan</th>
                                         <th style="text-align:right">Paid</th>
                                         <th style="text-align:right">Interest</th>
-                                        <th>#</th>
+                                        
                                     </tr>
                                     <?php
 									foreach ($transactions as $transaction) {
                                         echo '<tr>
                                                 <td>' . $transaction->loanid . '</td>
+                                                <td style="width:20px"><input type="checkbox" name="txns[' . $transaction->id . ']" data-loanid="' . $transaction->loanid . '" value="' . $transaction->amount . '" class="txns" checked> </td>
                                                 <td>' . $transaction->borrower . '</td>
+                                                <td>' . date("d-M-Y", strtotime($transaction->transaction_date)) . '</td>
                                                 <td align="right">' . number_format($transaction->loan) . '</td>
                                                 <td align="right">' . number_format($transaction->settled) . '</td>
                                                 <td align="right">' . number_format($transaction->amount) . '</td>
-                                                <td><input type="checkbox" name="txns[' . $transaction->id . ']" data-loanid="' . $transaction->loanid . '" value="' . $transaction->amount . '" class="txns" checked> </td>
                                             </tr>';
 										
                                     }

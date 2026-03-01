@@ -19,7 +19,8 @@ if(isset($_POST)){
         'transaction_type' => 'I',
         'narration' => $narration,
         'behalf_of' => $_POST['behalf_of'],
-        'waiver' => $_POST['waiver']
+        'waiver' => $_POST['waiver'],
+        'converted_to_loan' => $_POST['converted_to_loan']
         ];
 
     foreach($_POST['loanid'] as $loanid=>$amount){

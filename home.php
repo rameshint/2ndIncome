@@ -537,8 +537,8 @@ include 'footer.php';
                             onComplete: function() {
                                 var chartInstance = this;
                                 var ctx = chartInstance.chart.ctx;
-                                ctx.font = "bold 10px Arial";
-                                ctx.fillStyle = "#28a745";
+                                ctx.font = "bold 10px 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+                                ctx.fillStyle = "#000000";
                                 ctx.textAlign = 'center';
                                 ctx.textBaseline = 'bottom';
 

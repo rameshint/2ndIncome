@@ -9,7 +9,7 @@ $db = Database::connect();
 
 class loans
 {
-    private $fields = ['lenderid', 'borrowerid', 'opening_date', 'agreed_closing_date', 'amount', 'interest_type', 'interest_value', 'commission', 'description','parent_loanid','loan_opening_date'];
+    private $fields = ['lenderid', 'borrowerid', 'opening_date', 'agreed_closing_date', 'amount', 'interest_type', 'interest_value', 'commission', 'description','parent_loanid','loan_opening_date', 'interest_loan'];
     private $tablename = 'loans';
 
     public function fetchall()
@@ -133,7 +133,17 @@ WHERE s.id = $id";
                 where d.interest > 1
 				GROUP BY d.id  
                 ";
-        
+        $sql = "SELECT bid id,borrower, sum(amount - settled) amount, SUM(interest) interest FROM ( 
+              SELECT l.id,b.id bid, b.name borrower, a.name lender, l.amount, sum(CASE WHEN t.transaction_type = 'R' THEN t.amount ELSE 0 END) settled, 
+              calculate_interest('C', l.amount,l.interest_value,l.interest_type,l.opening_date, case when l.closing_date IS NOT null then l.closing_date ELSE '$date' end) - sum(CASE WHEN t.transaction_type = 'R' THEN calculate_interest('C', t.amount,l.interest_value,l.interest_type,date_add(t.transaction_date, INTERVAL 1 DAY), case when l.closing_date IS NOT null then l.closing_date ELSE '$date' end) ELSE 0 END) - sum(CASE WHEN t.transaction_type = 'I' THEN t.amount ELSE 0 END) interest 
+              FROM loans l 
+              left join transactions t ON t.loanid = l.id AND case when t.transaction_type='R' AND t.transaction_date > '$date' then 0 ELSE 1 END = 1 and t.behalf_of = 0 
+              left join lenders a ON a.id = l.lenderid 
+              LEFT JOIN borrowers b ON b.id = l.borrowerid
+              WHERE  l.opening_date <= '$date' AND l.`status` = 1 GROUP BY l.id
+              ) c 
+              WHERE c.interest>0
+              GROUP BY bid, borrower";
 
         return $db->query($sql)->results();
     }

@@ -10,7 +10,7 @@ $db = Database::connect();
 
 class transactions
 {
-    private $fields = ['loanid','transaction_date','bank_date', 'amount','transaction_type', 'narration','behalf_of', 'flag', 'waiver'];
+    private $fields = ['loanid','transaction_date','bank_date', 'amount','transaction_type', 'narration','behalf_of', 'flag', 'waiver', 'converted_to_loan'];
     private $tablename = 'transactions';
     public function fetchall(){
         global $db;
@@ -55,7 +55,8 @@ class transactions
                 'transaction_type' => 'D',
                 'lenderid' => $owner->id,
                 'description' => 'Interest sent behalf of '.$loanDetails->borrower.' to '.$loanDetails->lender,
-                'transaction_category' => 'Loan'
+                'transaction_category' => 'Loan',
+                'converted_to_loan' => $params['converted_to_loan']
             ];
             $investmentObj->save($tmp_params);
 
@@ -118,11 +119,16 @@ LEFT JOIN (SELECT loanid, IFNULL(SUM(balance_amount),0) recovery_amount FROM rec
     }
     public function fetchUnSettledTransactions($date){
         global $db;
+
+        if($_GET['borrowers']){
+            $borrower_filter = " and l.borrowerid ".$_GET['filter_condition']." (".implode(',', $_GET['borrowers']).") ";   
+        }   
+
         $sql = "SELECT l.id loanid, t.id, b.name borrower,l.amount loan,s.settled , t.amount,t.transaction_date FROM transactions t 
                 LEFT JOIN loans l ON l.id = t.loanid and l.status = 1
                 LEFT JOIN borrowers b ON b.id = l.borrowerid
                 LEFT JOIN (SELECT loanid, SUM(amount) settled FROM transactions WHERE transaction_type = 'R' GROUP BY loanid) s ON s.loanid = t.loanid
-                WHERE flag = 0 AND t.transaction_type in('I','E') and waiver = 0 order by l.id, transaction_date ";
+                WHERE flag = 0 AND t.transaction_type in('I','E') and waiver = 0 $borrower_filter order by b.name,transaction_date ";
         return $db->query($sql)->results();
     }
 	

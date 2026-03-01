@@ -140,6 +140,7 @@ ORDER  BY l.opening_date DESC ";
                 left join lenders a ON a.id = l.lenderid
                 WHERE l.borrowerid = $borrowerid and l.opening_date <= '$date' AND l.`status` = 1
                 GROUP  BY l.id) c WHERE c.interest>0";
+                
         return $db->query($sql)->results();
     }
 }
