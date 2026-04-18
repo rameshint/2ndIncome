@@ -29,7 +29,7 @@ try {
     $lenders = new lenders();
     
     // Column mapping for ordering
-    $columns = ['id', 'txn_date', 'bank_date', 'description', 'amount', 'amount', 'current_balance'];
+    $columns = ['id', 'txn_date', 'bank_date', 'description', 'amount', 'amount', 'current_balance', 'borrower_name'];
     $orderColumn = $columns[$orderColumnIndex] ?? 'id';
     
     // Get transactions with search, pagination and ordering
@@ -55,7 +55,9 @@ try {
             htmlspecialchars($transaction->description),
             $credit,
             $debit,
-            number_format($transaction->current_balance, 2)
+            number_format($transaction->current_balance, 2),
+            htmlspecialchars($transaction->borrower_name)
+
         ];
     }
     

@@ -7,6 +7,7 @@ if($_POST['widget'] == 'current_balance'){
     header('Content-Type: application/json');
     echo json_encode($data);
 }else if($_POST['widget'] == 'pending_interest'){
+    ini_set("display_errors", 1);
     include_once 'model/loans.php';
     $loanObj = new loans();
     $date = date('Y-m-d', strtotime('last day of previous month'));

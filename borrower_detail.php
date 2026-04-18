@@ -410,7 +410,7 @@ $color = $colors[array_rand($colors)];
                                                     <div class="form-group">
                                                         <label for="loan-interest_to_loan-to-loan">Interest to Loan</label>
                                                         <input type="checkbox" name="interest_loan" class="form-control"
-                                                             value="1"  required id="loan-interest_to_loan-to-loan">
+                                                             value="1" id="loan-interest_to_loan-to-loan">
                                                     </div>
                                                 </td>
                                             </tr>

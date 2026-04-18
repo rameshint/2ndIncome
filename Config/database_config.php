@@ -56,9 +56,9 @@ return [
 		'pgsql' => [
 			'driver' => 'pgsql',
 			'host_name' => 'localhost',
-			'db_name' => 'database_name',
-			'db_user' => 'database_username',
-			'db_password' => 'database_user_password'
+			'db_name' => 'pramesh',
+			'db_user' => 'root',
+			'db_password' => ''
 		],
 
 		// SQLite

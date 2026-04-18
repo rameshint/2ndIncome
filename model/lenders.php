@@ -5,11 +5,16 @@ $db = Database::connect();
 
 class lenders
 {
-    private $fields = ['name', 'address','primary_contact_no','secondary_contact_no','net_investment', 'current_balance'];
+    private $fields = ['name', 'lender_type', 'address','primary_contact_no','secondary_contact_no','net_investment', 'current_balance', 'lender_type'];
     private $tablename = 'lenders';
     public function fetchall(){
         global $db;
-        return $db->table($this->tablename)->select(['id','name','net_investment'])->results();
+        return $db->table($this->tablename)->orderBy('net_investment', 'DESC')->select(['id','name','lender_type','net_investment'])->results();
+    }
+
+    public function fetchBasic($id){
+        global $db;
+        return $db->table($this->tablename)->where('id', (int)$id)->select(['id','name','lender_type','address','primary_contact_no','secondary_contact_no'])->results()[0];
     }
 
     public function getOwner(){
@@ -77,10 +82,12 @@ GROUP BY l.id
     public function fetchTransactionsForDataTable($lenderId, $start, $length, $searchValue, $orderColumn, $orderDirection){
         global $db;
         
-        $sql = 'SELECT id, amount, transaction_type, txn_date, bank_date, description, 
-                CASE WHEN transaction_type = "C" THEN current_balance + amount 
-                     ELSE current_balance - amount END as current_balance  
-                FROM investments 
+        $sql = 'SELECT i.id, i.amount, i.transaction_type, i.txn_date, i.bank_date, i.description, 
+                CASE WHEN i.transaction_type = "C" THEN i.current_balance + i.amount 
+                     ELSE i.current_balance - i.amount END as current_balance  ,
+                b.name as borrower_name
+                FROM investments i 
+                left join borrowers b on b.id = i.borrower_id
                 WHERE lenderid = ' . $lenderId;
         
         // Add search condition if search value is provided
@@ -122,4 +129,6 @@ GROUP BY l.id
         $result = $db->query($sql)->results();
         return $result[0]->total;
     }
+
+     
 }

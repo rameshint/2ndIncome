@@ -38,6 +38,18 @@ class borrowers
         return false;
     }
 
+    public function update($id, $request)
+    {
+        global $db;
+        $params = [];
+        foreach ($this->fields as $field) {
+            if (isset($request[$field])) {
+                $params[$field] = $request[$field];
+            }
+        }
+        return $db->table($this->tablename)->where('id', '=', (int)$id)->update($params);
+    }
+
     public function fetchAllTransactions($borrowerid)
     {
         global $db;

@@ -173,6 +173,11 @@ include_once 'config.ini.php';
                     <i class="fas fa-th-large"></i>
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" href="logout.php" title="Logout">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
         </ul>
     </nav>
     <!-- /.navbar -->
@@ -205,55 +210,43 @@ include_once 'config.ini.php';
                          with font-awesome or any other icon font library -->
                     <li class="nav-item">
                         <a href="lenders.php" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
-                            <p>
-                                Lenders
-                            </p>
+                            <i class="nav-icon fas fa-hand-holding-usd"></i>
+                            <p>Lenders</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="borrowers.php" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
-                            <p>
-                                Borrowers
-                            </p>
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>Borrowers</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="interest.php" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
-                            <p>
-                                Interest
-                            </p>
+                            <i class="nav-icon fas fa-percentage"></i>
+                            <p>Interest</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="settlement.php" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
-                            <p>
-                                Settlement
-                            </p>
+                            <i class="nav-icon fas fa-handshake"></i>
+                            <p>Settlement</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="transactions.php" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
-                            <p>
-                                Transactions
-                            </p>
+                            <i class="nav-icon fas fa-exchange-alt"></i>
+                            <p>Transactions</p>
                         </a>
                     </li>
-					<li class="nav-item">
+                    <li class="nav-item">
                         <a href="uncleared_returns.php" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
-                            <p>
-                                Uncleared Returns
-                            </p>
+                            <i class="nav-icon fas fa-undo-alt"></i>
+                            <p>Uncleared Returns</p>
                         </a>
                     </li>
-					<li class="nav-item has-treeview">
+                    <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
-              <i class="nav-icon fas fa-copy"></i>
+              <i class="nav-icon fas fa-chart-bar"></i>
               <p>
                 Reports
                 <i class="fas fa-angle-left right"></i>
@@ -262,92 +255,95 @@ include_once 'config.ini.php';
             <ul class="nav nav-treeview">
               <li class="nav-item">
                 <a href="reports_lender_borrower_loans.php" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-					<p>Loans</p>
+                  <i class="fas fa-file-invoice-dollar nav-icon"></i>
+                  <p>Loans</p>
                 </a>
               </li>
-                <li class="nav-item">
-                    <a href="report_settlement.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Settlement</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="report_lender_transactions.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Lender Transactions</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="report_interest_free_loans.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Interest Free Loans</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="report_interest_collected.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Interest / Collected</p>
-                    </a>
-                </li>
-                </li> <li class="nav-item">
-                    <a href="report_consolidate_report.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Consolidate Summary</p>
-                    </a>
-                </li>
-				<li class="nav-item">
-                    <a href="report_lender_interest_analysis.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Lender Interest Analysis</p>
-                    </a>
-                </li>
-				<li class="nav-item">
-                    <a href="report_interest_rate_wise_loans.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>ROI Wise Loans</p>
-                    </a>
-                </li>
-				<li class="nav-item">
-                    <a href="report_unsettled_lender_interest.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Unsettled lender interest</p>
-                    </a>
-                </li>
-				<li class="nav-item">
-                    <a href="report_long_unsettled_loans.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Unsettled Long Loans</p>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="report_oneyear_settled_interest.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Past 12 months Interest</p>
-                    </a>
-                </li> <li class="nav-item">
-                    <a href="report_transactions.php" class="nav-link">
-                        <i class="far fa-circle nav-icon"></i>
-                        <p>Transaction Summary</p>
-                    </a>
-                
-                
+              <li class="nav-item">
+                  <a href="report_settlement.php" class="nav-link">
+                      <i class="fas fa-check-double nav-icon"></i>
+                      <p>Settlement</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_lender_transactions.php" class="nav-link">
+                      <i class="fas fa-list-alt nav-icon"></i>
+                      <p>Lender Transactions</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_interest_free_loans.php" class="nav-link">
+                      <i class="fas fa-ban nav-icon"></i>
+                      <p>Interest Free Loans</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_interest_collected.php" class="nav-link">
+                      <i class="fas fa-coins nav-icon"></i>
+                      <p>Interest / Collected</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_consolidate_report.php" class="nav-link">
+                      <i class="fas fa-layer-group nav-icon"></i>
+                      <p>Consolidate Summary</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_lender_interest_analysis.php" class="nav-link">
+                      <i class="fas fa-chart-line nav-icon"></i>
+                      <p>Lender Interest Analysis</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_interest_rate_wise_loans.php" class="nav-link">
+                      <i class="fas fa-sliders-h nav-icon"></i>
+                      <p>ROI Wise Loans</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_unsettled_lender_interest.php" class="nav-link">
+                      <i class="fas fa-hourglass-half nav-icon"></i>
+                      <p>Unsettled Lender Interest</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_long_unsettled_loans.php" class="nav-link">
+                      <i class="fas fa-clock nav-icon"></i>
+                      <p>Unsettled Long Loans</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_oneyear_settled_interest.php" class="nav-link">
+                      <i class="fas fa-calendar-alt nav-icon"></i>
+                      <p>Past 12 months Interest</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_transactions.php" class="nav-link">
+                      <i class="fas fa-table nav-icon"></i>
+                      <p>Transaction Summary</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_borrower_interest_tally.php" class="nav-link">
+                      <i class="fas fa-balance-scale nav-icon"></i>
+                      <p>Borrower Interest Tally</p>
+                  </a>
+              </li>
+              <li class="nav-item">
+                  <a href="report_lender_interest_vs_settled.php" class="nav-link">
+                      <i class="fas fa-chart-pie nav-icon"></i>
+                      <p>Lender Interest vs Settled</p>
+                  </a>
+              </li>
 
             </ul>
           </li>
 					
                 </ul>
             </nav>
-			<div style="position:absolute; bottom : 0px">
-			
-                        <a href="logout.php" class="nav-link">
-                            <i class="nav-icon fas fa-th" style="font-size: 1.1rem; padding:5px"></i>
-							<span style="transition: margin-left .3s linear, opacity .3s ease, visibility .3s ease;">
-                                Logout
-							</span>
-                        </a>
-            
-			</div>
+
             <!-- /.sidebar-menu -->
         </div>
         <!-- /.sidebar -->

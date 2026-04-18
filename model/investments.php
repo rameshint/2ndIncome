@@ -5,11 +5,11 @@ $db = Database::connect();
 
 class investments
 {
-    private $fields = ['txn_date','bank_date', 'amount','transaction_type','lenderid', 'current_balance', 'description','transaction_category'];
+    private $fields = ['txn_date','bank_date', 'amount','transaction_type','lenderid', 'current_balance', 'description','transaction_category', 'interest_rate', 'borrower_id'];
     private $tablename = 'investments';
     public function fetchall(){
         global $db;
-        return $db->table($this->tablename)->select(['id','txn_date','amount','transaction_type', 'lenderid', 'current_balance','description', 'bank_date','transaction_category',])->results();
+        return $db->table($this->tablename)->select(['id','txn_date','amount','transaction_type', 'lenderid', 'current_balance','description', 'bank_date','transaction_category', 'interest_rate', 'borrower_id'])->results();
     }
 
     public function fetch($id){

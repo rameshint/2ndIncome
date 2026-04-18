@@ -1,8 +1,14 @@
-<?php
+﻿<?php
 include 'header.php';
 include_once 'model/lenders.php';
+include_once 'model/borrowers.php';
+?>
+<link href="dist/css/select2.min.css" rel="stylesheet" />
+<link href="dist/css/select2-bootstrap4.min.css" rel="stylesheet" />
+<?php
 $lender = (new lenders())->fetch($_GET['id'])[0];
 $color =  $colors[array_rand($colors)];
+$borrowers = (new borrowers())->fetchall();
 ?>
 <!-- Main content -->
 <section class="content">
@@ -15,7 +21,7 @@ $color =  $colors[array_rand($colors)];
                     <!-- Add the bg color to the header using any of the bg-* classes -->
                     <div class="widget-user-header bg-<?=$color?>">
                         <!-- /.widget-user-image -->
-                        <h4 class="widget-user-username"><?=$lender->name?></h4>
+                        <h4 class="widget-user-username"><?=$lender->name?> <small><span class="badge <?= $lender->lender_type === 'Sharing' ? 'badge-warning' : 'badge-success' ?>"><?= htmlspecialchars($lender->lender_type) ?></span></small></h4>
                         <h6 class="widget-user-desc"><?= $lender->address?>, Ph: <?= $lender->primary_contact_no?></h6>
                     </div>
                     <div class="card-footer p-0">
@@ -73,23 +79,58 @@ $color =  $colors[array_rand($colors)];
                             <form id="investment_form" action="investment_save.php" method="post">
                                 <input type="hidden" name="lenderid" value="<?=$_GET['id']?>">
                                 <input type="hidden" name="transaction_type" value="C">
-                                <input type="hidden" name="transaction_category" value="Loan">
                                 <div class="modal-body">
-                                    <div class="form-group">
-                                        <label for="credit_amount">Amount</label>
-                                        <input type="number" name="amount" class="form-control" step=".01"  required id="credit_amount" >
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="credit_date">Txn Date</label>
-                                        <input type="date" name="txn_date" class="form-control"  required id="credit_date" value="<?php echo date("Y-m-d")?>" >
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="credit_bankdate">Bank Date</label>
-                                        <input type="date" name="bank_date" class="form-control"  id="credit_bankdate"  value="<?php echo date("Y-m-d")?>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="credit_narration">Narration</label>
-                                        <input type="text" name="description" class="form-control"  required id="credit_narration" >
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="credit_amount">Amount</label>
+                                                <input type="number" name="amount" class="form-control" step=".01" required id="credit_amount">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_category">Category</label>
+                                                <select name="transaction_category" class="form-control" required id="debit_category">
+                                                    <option>Loan</option>
+                                                    <option>Interest</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="credit_date">Txn Date</label>
+                                                <input type="date" name="txn_date" class="form-control" required id="credit_date" value="<?php echo date('Y-m-d')?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="credit_bankdate">Bank Date</label>
+                                                <input type="date" name="bank_date" class="form-control" id="credit_bankdate" value="<?php echo date('Y-m-d')?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="credit_narration">Narration</label>
+                                                <input type="text" name="description" class="form-control" required id="credit_narration">
+                                            </div>
+                                        </div>
+                                        <div class="col-6" id="credit_rate_group">
+                                            <div class="form-group">
+                                                <label for="credit_interest_rate">Interest Rate (%)</label>
+                                                <input type="number" name="interest_rate" class="form-control" step="0.01" id="credit_interest_rate" placeholder="e.g. 1.5">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="credit_borrower">Borrower</label>
+                                                <select name="borrower_id" class="form-control borrower-select" id="credit_borrower">
+                                                    <option value="">Select Borrower</option>
+                                                    <?php foreach($borrowers as $borrower){ ?>
+                                                        <option value="<?=$borrower->id?>"><?=$borrower->name?></option>
+                                                    <?php } ?>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer justify-content-between">
@@ -116,29 +157,52 @@ $color =  $colors[array_rand($colors)];
                                 <input type="hidden" name="lenderid" value="<?=$_GET['id']?>">
                                 <input type="hidden" name="transaction_type" value="D">
                                 <div class="modal-body">
-                                    <div class="form-group">
-                                        <label for="debit_amount">Amount</label>
-                                        <input type="number" name="amount" class="form-control" step=".01"  required id="debit_amount" >
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="debit_date">Date</label>
-                                        <input type="date" name="txn_date" class="form-control"  required id="debit_date" value="<?php echo date("Y-m-d")?>" >
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="debit_bankdate">Bank Date</label>
-                                        <input type="date" name="bank_date" class="form-control"  required id="debit_bankdate"  value="<?php echo date("Y-m-d")?>">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="debit_narration">Narration</label>
-                                        <input type="text" name="description" class="form-control"  required id="debit_narration" >
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="debit_category">Category</label>
-                                        <select name="transaction_category" class="form-control"  required id="debit_category" >
-                                            <option>Loan</option>
-                                            <option>Interest</option>
-                                            <option>Expense</option>
-                                        </select>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_amount">Amount</label>
+                                                <input type="number" name="amount" class="form-control" step=".01" required id="debit_amount">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_category">Category</label>
+                                                <select name="transaction_category" class="form-control" required id="debit_category">
+                                                    <option>Loan</option>
+                                                    <option>Interest</option>
+                                                    <option>Expense</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_date">Txn Date</label>
+                                                <input type="date" name="txn_date" class="form-control" required id="debit_date" value="<?php echo date('Y-m-d')?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_bankdate">Bank Date</label>
+                                                <input type="date" name="bank_date" class="form-control" required id="debit_bankdate" value="<?php echo date('Y-m-d')?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="form-group">
+                                                <label for="debit_narration">Narration</label>
+                                                <input type="text" name="description" class="form-control" required id="debit_narration">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_borrower">Borrower</label>
+                                                <select name="borrower_id" class="form-control borrower-select" id="debit_borrower">
+                                                    <option value="">Select Borrower</option>
+                                                    <?php foreach($borrowers as $borrower){ ?>
+                                                        <option value="<?=$borrower->id?>"><?=$borrower->name?></option>
+                                                    <?php } ?>
+                                                </select>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="modal-footer justify-content-between">
@@ -171,6 +235,7 @@ $color =  $colors[array_rand($colors)];
                                         <th width="8%">Credit</th>
                                         <th width="8%">Debit</th>
                                         <th width="8%">Balance</th>
+                                        <th>Borrower</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -191,6 +256,7 @@ $color =  $colors[array_rand($colors)];
 include 'footer.php';
 ?>
 
+<script src="dist/js/select2.min.js"></script>
 <script>
 function ExcelDateToJSDate(serial) {
    var utc_days  = Math.floor(serial - 25569);
@@ -212,6 +278,43 @@ function ExcelDateToJSDate(serial) {
 }
 $(document).ready(function(){
 
+    // Show/hide interest rate based on credit category
+    function toggleCreditRate() {
+        var cat = $('#debit_category').val();
+        if (cat === 'Loan') {
+            $('#credit_rate_group').show();
+        } else {
+            $('#credit_rate_group').hide();
+            $('#credit_interest_rate').val('');
+        }
+    }
+    $('#debit_category').on('change', toggleCreditRate);
+    toggleCreditRate();
+
+    // Initialize Select2 on borrower dropdowns (opens search when modal is shown)
+    $('.borrower-select').select2({
+        theme: 'bootstrap4',
+        placeholder: 'Select Borrower',
+        allowClear: true,
+        dropdownParent: $('.modal.fade')
+    });
+    $('#modal-credit').on('shown.bs.modal', function() {
+        $('#credit_borrower').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Select Borrower',
+            allowClear: true,
+            dropdownParent: $('#modal-credit')
+        });
+    });
+    $('#modal-debit').on('shown.bs.modal', function() {
+        $('#debit_borrower').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Select Borrower',
+            allowClear: true,
+            dropdownParent: $('#modal-debit')
+        });
+    });
+
     // Initialize DataTable
     var transactionTable = $("#example").DataTable({
         processing: true,
@@ -231,7 +334,9 @@ $(document).ready(function(){
             { data: 3, name: 'description' },
             { data: 4, name: 'credit', className: 'text-right' },
             { data: 5, name: 'debit', className: 'text-right' },
-            { data: 6, name: 'balance', className: 'text-right' }
+            { data: 6, name: 'balance', className: 'text-right' },
+            { data: 7, name: 'borrower_name' }
+
         ],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
