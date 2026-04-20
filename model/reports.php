@@ -63,7 +63,7 @@ l.agreed_closing_date FROM loans l
 INNER JOIN lenders a ON a.id = l.lenderid
 INNER JOIN borrowers b ON b.id = l.borrowerid
 LEFT JOIN (SELECT loanid, SUM(amount) amount FROM transactions WHERE TRANSACTION_type = 'R' GROUP BY loanid) t ON t.loanid = l.id
-WHERE l.interest_value = 0 AND l.closing_date IS NULL";
+WHERE l.status = 1 and l.interest_value = 0 AND l.closing_date IS NULL";
         return $db->query($sql)->results();
     }
 	
