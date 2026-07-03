@@ -1,6 +1,7 @@
 <?php
 include_once 'model/loans.php';
 require_once 'config.ini.php';
+ 
 $loanObj = new loans();
 $date = $_REQUEST['date'];
 $borrowers = $loanObj->fetchPendingInterest($date);

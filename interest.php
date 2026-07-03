@@ -31,7 +31,7 @@ if($_REQUEST['date']!=''){
                             </tr>
                         </table>
                         <div id="interest_pending_list"></div>
-                        <div class="modal fade" id="modal-interest-pay">
+                        <div class="modal  fade" id="modal-interest-pay">
                             <div class="modal-dialog">
                                 <div class="modal-content">
 
@@ -190,6 +190,10 @@ include_once 'footer.php';
             $(document).find(".interest-copy").each(function(){
                 $(this).click()    
             })
+        })
+
+        $(document).on('click', '#converted_to_loan', function(){
+            $(this).is(':checked') ? $("#interest_rate").prop('disabled', false) : $("#interest_rate").prop('disabled', true)
         })
 		
 		 

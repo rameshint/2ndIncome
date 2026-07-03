@@ -74,7 +74,7 @@ class borrowers
                              ELSE 0
                            END)   - SUM(CASE WHEN t.transaction_type = 'I' AND t.waiver = 1 thEN t.amount ELSE 0 END) total_interest,
                                       sum(CASE
-                                        WHEN t.transaction_type = 'I' AND t.waiver = 0 THEN
+                                        WHEN t.transaction_type = 'I' AND t.waiver = 0  AND ifnull(t.parent_interest_id,0) = 0 THEN
                                         t.amount
                                         ELSE 0
                                       END) interest_paid,
@@ -91,6 +91,7 @@ WHERE  l.borrowerid = $borrowerid and l.status= 1
 GROUP  BY l.id
 ORDER  BY l.opening_date DESC 
 ) a ";
+ 
 
         return $db->query($sql)->results()[0];
     }
@@ -103,6 +104,8 @@ ORDER  BY l.opening_date DESC
        a.name lender,
        l.amount,
        l.interest_value roi,
+       l.description,
+       l.interest_loan,
        sum(CASE
              WHEN t.transaction_type = 'R' THEN t.amount
              ELSE 0
@@ -113,7 +116,7 @@ ORDER  BY l.opening_date DESC
                              ELSE 0
                            END)  total_interest,
                                       sum(CASE
-                                        WHEN t.transaction_type = 'I' THEN
+                                        WHEN t.transaction_type = 'I'  AND IFNULL(t.parent_interest_id,0) = 0  THEN
                                         t.amount
                                         ELSE 0
                                       END) interest_paid,
@@ -126,6 +129,7 @@ left join lenders a ON a.id = l.lenderid
 WHERE  l.borrowerid = $borrowerid and l.status= 1
 GROUP  BY l.id
 ORDER  BY l.opening_date DESC ";
+ 
         return $db->query($sql)->results();
     }
     public function fetchPendingInterest($borrowerid, $date){

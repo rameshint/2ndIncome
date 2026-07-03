@@ -33,6 +33,7 @@ if ($lenderId > 0) {
           AND s.settlement_date >= ?
         GROUP BY b.id, b.name, s.settlement_date
     ";
+    
 
     $rawRows = $db->query($sql, [$lenderId, $fromDate, $lenderId, $fromDate])->results();
 

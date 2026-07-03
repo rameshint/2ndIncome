@@ -69,11 +69,10 @@ $borrowers = (new borrowers())->fetchall();
                                         <td>LoanId</td>
                                         <th>#</th>
                                         <th>Borrower</th>
-                                        <th>Txn Date<th>
+                                        <th>Txn Date</th>
                                         <th style="text-align:right">Loan</th>
                                         <th style="text-align:right">Paid</th>
                                         <th style="text-align:right">Interest</th>
-                                        
                                     </tr>
                                     <?php
 									foreach ($transactions as $transaction) {
@@ -90,7 +89,7 @@ $borrowers = (new borrowers())->fetchall();
                                     }
                                     ?>
 									<tr>
-									<th colspan=4>Net Total</th><td  align="right" id="txn_total"></td>
+									<th colspan=6>Net Total</th><td  align="right" id="txn_total"></td>
 									</tr>
                                 </table>
                             </div>
@@ -125,6 +124,10 @@ $borrowers = (new borrowers())->fetchall();
                                         </td></tr>
                                     <?php
                                     $lender = '';
+                                    $net_total_interest = 0;
+                                    $net_lender_interest = 0;
+                                    $net_commission = 0;
+                                    $net_recovery = 0;
                                     foreach ($loans as $loan) {
                                         if ($lender != $loan->lender) {
                                             if ($lender != '') {
@@ -172,6 +175,10 @@ $borrowers = (new borrowers())->fetchall();
                                         $lender_interest += $loan->lender_interest;
                                         $commission += ($loan->total_interest - $loan->lender_interest);
                                         $recovery += $loan->recovery_amount;
+                                        $net_total_interest += $loan->total_interest;
+                                        $net_lender_interest += $loan->lender_interest;
+                                        $net_commission += ($loan->total_interest - $loan->lender_interest);
+                                        $net_recovery += $loan->recovery_amount;
                                     }
                                     echo '<tr><td colspan="2" align="right">Net Total</td>';
                                     echo '<th style="text-align: right ">' . $amount . '</th>';
@@ -186,12 +193,13 @@ $borrowers = (new borrowers())->fetchall();
                                     echo '<th style="text-align: right " id="nt_excess_' . $lenderid . '">0</th>';
                                     echo '</tr>';
                                     echo '<tr><td colspan="2" align="right">Grant Total</td>';
-                                    echo '<th style="text-align: right "></th>';
-                                    echo '<th style="text-align: right "></th>';
-                                    echo '<th style="text-align: right "></th>';
-                                    echo '<th style="text-align: right "></th>';
-                                    echo '<th style="text-align: right "></th>';
+                                    echo '<th style="text-align: right " >0</th>';
+                                    echo '<th style="text-align: right ">' . $net_total_interest . '</th>';
+                                    echo '<th style="text-align: right ">' . $net_lender_interest . '</th>';
+                                    echo '<th style="text-align: right ">' . $net_commission . '</th>';
+                                    echo '<th style="text-align: right ">' . $net_recovery . '</th>';
                                     echo '<th style="text-align: right " id="grant_interest">0</th>';
+                                    
                                     echo '<th style="text-align: right " id="grant_commission">0</th>';
                                     echo '<th style="text-align: right " id="grant_recovery">0</th>';
                                     echo '<th style="text-align: right " id="grant_total">0</th>';
@@ -228,11 +236,11 @@ include_once 'footer.php';
                 excess = 0
                 loanid = $(this).data('loanid');
 
-                console.log("-------------------------------------------------------------------------------------------------")
-                console.log("loan = " + loanid)
+                //console.log("-------------------------------------------------------------------------------------------------")
+                //console.log("loan = " + loanid)
 
                 pre_txn_amount = txn_amount = parseFloat($(this).val())
-                console.log("txn amount = " + txn_amount)
+                //console.log("txn amount = " + txn_amount)
 
                 lender_interest = parseFloat($("#lender_interest_" + loanid).text())
                 total_interest = parseFloat($("#total_interest_" + loanid).text())
@@ -252,11 +260,11 @@ include_once 'footer.php';
                     } else {
                         pre_lender_interest += txn_amount;
                     }
-                    console.log("lender interest = " + lender_interest)
+                    //console.log("lender interest = " + lender_interest)
                     txn_amount = txn_amount - balance;
                 }
-                console.log("txn amount = " + txn_amount)
-                console.log("lender amount = " + pre_lender_interest)
+                //console.log("txn amount = " + txn_amount)
+                //console.log("lender amount = " + pre_lender_interest)
 
 
                 if (txn_amount > 0) {
@@ -269,8 +277,8 @@ include_once 'footer.php';
                         }
                         txn_amount = txn_amount - balance;
                     }
-                    console.log("txn amount = " + txn_amount)
-                    console.log("recovery amount = " + pre_recovery)
+                    //console.log("txn amount = " + txn_amount)
+                    //console.log("recovery amount = " + pre_recovery)
                 }
 
                 if (txn_amount > 0) {
@@ -283,8 +291,8 @@ include_once 'footer.php';
                         }
                         txn_amount = txn_amount - balance;
                     }
-                    console.log("txn amount = " + txn_amount)
-                    console.log("commission amount = " + pre_commission)
+                    //console.log("txn amount = " + txn_amount)
+                    //console.log("commission amount = " + pre_commission)
                 }
 
 

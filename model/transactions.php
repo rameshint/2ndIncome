@@ -1,4 +1,5 @@
 <?php
+ 
 include_once('vendor/autoload.php');
 include_once 'model/recoverables.php';
 include_once 'model/investments.php';
@@ -10,7 +11,7 @@ $db = Database::connect();
 
 class transactions
 {
-    private $fields = ['loanid','transaction_date','bank_date', 'amount','transaction_type', 'narration','behalf_of', 'flag', 'waiver', 'converted_to_loan'];
+    private $fields = ['loanid','transaction_date','bank_date', 'amount','transaction_type', 'narration','behalf_of', 'flag', 'waiver', 'converted_to_loan', 'parent_interest_id'];
     private $tablename = 'transactions';
     public function fetchall(){
         global $db;
@@ -24,12 +25,15 @@ class transactions
 
     public function save($request){
         global $db;
+         
         $params = Array();
         foreach ($this->fields as $field){
             if(isset($request[$field])){
                 $params[$field] = $request[$field];
             }
         }
+         
+ 
 
         if(isset($request['id']) && $request['id'] > 0){
             $status = $db->table($this->tablename)->where('id', $request['id'])->update($params);
@@ -68,10 +72,50 @@ class transactions
             ];
             $recoverableObj->save($tmp_params);
         }
+        
+        if(isset($request['interest_loans']) && is_array($request['interest_loans']) && count($request['interest_loans']) > 0){
+            foreach($request['interest_loans'] as $txn_id=>$amount){
+                
+                if(floatval($amount) > 0) {
+                    $txnObj = $this->fetch($txn_id);
+                    $txn_params = [
+                        'loanid' => $txnObj->loanid,
+                        'transaction_date' => $params['transaction_date'],
+                        'bank_date' => $params['bank_date'],
+                        'amount' => $amount,
+                        'transaction_type' => 'I',
+                        'narration' => 'Interest Repayment',
+                        'parent_interest_id' => $txn_id,
+                    ];
+                    $this->save($txn_params);
+                }
+            }
+            $lenderObj = new lenders();
+            $owner = $lenderObj->getOwner();
+            $investmentObj = new investments();
+            $investment_params = [
+                'lenderid' => $owner->id,
+                'txn_date' => $params['transaction_date'],
+                'amount' => $params['amount'],
+                'transaction_type' => 'D',
+                'transaction_category' => 'Loan',
+                'description' => 'Interest Loan Repayment',
+                'borrower_id' => $params['borrowerid'],
+            ];
+            $investmentObj->save($investment_params);
+        }
 
         return $status;
     }
-	
+
+    public function fetchInterestLoans($loanid){
+        global $db;
+        $sql = "SELECT t.loanid, t.id, t.amount - ifnull(s.settled,0) amount   FROM transactions t 
+                LEFT JOIN (SELECT parent_interest_id , SUM(amount) settled FROM transactions WHERE parent_interest_id > 0 ) s ON s.parent_interest_id = t.id
+                WHERE t.converted_to_loan = ".$loanid;
+        return $db->query($sql)->results();
+    }
+ 	
 	
 	public function updateClosingDate($params){
 		global $db;
@@ -90,6 +134,11 @@ class transactions
 
     public function fetchLoans($date){
         global $db;
+
+        if($_GET['borrowers']){
+            $borrower_filter = " and l.borrowerid ".$_GET['filter_condition']." (".implode(',', $_GET['borrowers']).") ";   
+        }   
+
         $sql = "SELECT * FROM (SELECT c.id loanid,b.name borrower,a.id lenderid, a.name lender ,sum(c.amount)amount,sum(c.lender_int )-ifnull(s.lender_interest,0) -ifnull(wv.amount,0) lender_interest ,SUM(tot_int) - ifnull(s.lender_interest,0)-ifnull(wv.amount,0) total_interest ,ifnull(r.recovery_amount,0)recovery_amount  FROM (
 SELECT l.id, l.lenderid  ,l.borrowerid,     l.amount,     
      sum(CASE
@@ -102,7 +151,7 @@ SELECT l.id, l.lenderid  ,l.borrowerid,     l.amount,
           sum(ifnull(calculate_interest('L', t.amount,l.interest_value ,l.interest_type,date_add(t.transaction_date, INTERVAL 1 DAY),if(l.closing_date is not null AND l.closing_date <= '$date', l.closing_date, '$date')),0) ) tot_int
 FROM    loans l 
 left join transactions t ON t.loanid = l.id  AND t.transaction_type='R' AND t.transaction_date <= '$date' 
-WHERE l.opening_date <= '$date' and l.status = 1 AND EXISTS(SELECT 1 FROM transactions tt WHERE flag = 0 AND tt.loanid = l.id)
+WHERE l.opening_date <= '$date' and l.status = 1 AND EXISTS(SELECT 1 FROM transactions tt WHERE flag = 0 AND tt.loanid = l.id AND tt.transaction_type in  ('I', 'E') AND waiver = 0) $borrower_filter
 GROUP  BY l.id) c
 left join lenders a ON a.id = c.lenderid
 LEFT JOIN borrowers b ON b.id = c.borrowerid
@@ -113,7 +162,7 @@ LEFT JOIN (SELECT loanid, IFNULL(SUM(balance_amount),0) recovery_amount FROM rec
               GROUP  BY c.id
             ORDER BY a.name, b.name
 			) f WHERE (lender_interest+total_interest+recovery_amount) > 0";
-            
+ 
         
         return $db->query($sql)->results();
     }

@@ -84,7 +84,7 @@ select * from (SELECT c.id,c.lender, c.borrower,c.opening_date, c.roi,sum(c.amou
                                              ELSE 0
                                            END)  tot_int,
                                                       sum(CASE
-                                                        WHEN t.transaction_type = 'I' THEN
+                                                        WHEN t.transaction_type IN( 'I','E') AND IFNULL(t.converted_to_loan,0) = 0 THEN
                                                         t.amount
                                                         ELSE 0
                                                       END) interest
@@ -99,6 +99,7 @@ select * from (SELECT c.id,c.lender, c.borrower,c.opening_date, c.roi,sum(c.amou
                 GROUP  BY c.id, c.roi)d 
                 where d.amount > 0  
                ) v ORDER BY v.roi,v.borrower  ";
+                
 		return $db->query($sql)->results();
 	}
 
@@ -150,6 +151,18 @@ WHERE closing_date IS NULL AND l.status = 1 AND l.agreed_closing_date <= NOW() O
     WHERE transaction_category = 'Interest' AND transaction_type = 'C' AND i.txn_date >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 YEAR), '%Y-%m-01')
     GROUP BY DATE_FORMAT( i.txn_date,'%Y-%b'), l.name
     ORDER BY i.txn_date desc, l.name";
+    $sql = "SELECT 	DATE_FORMAT(i.settlement_date, '%Y-%b') mon, a.`name` , SUM(i.lender_interest + i.commission + i.recovery) amt FROM settlement i 
+LEFT JOIN loans l ON l.id = i.loanid
+LEFT JOIN lenders a ON a.id = l.lenderid
+WHERE i.settlement_date >= DATE_FORMAT(
+		DATE_SUB(
+			CURDATE(),
+			INTERVAL 1 YEAR
+		),
+		'%Y-%m-01'
+	)
+	GROUP BY DATE_FORMAT(i.settlement_date, '%Y-%b'), a.name";
+ 
 		$Interest = [];
 		foreach($db->query($sql)->results() as $obj){
 			$Interest[$obj->name][$obj->mon] = $obj->amt;
@@ -194,7 +207,7 @@ interests AS (SELECT id loanid, tot_int, interest, tot_int - ifnull(interest,0) 
                                              ELSE 0
                                            END)  tot_int,
                                                       sum(CASE
-                                                        WHEN t.transaction_type IN ( 'I', 'E') THEN
+                                                        WHEN t.transaction_type IN ( 'I', 'E')  AND IFNULL(t.parent_interest_id,0)=0 THEN
                                                         t.amount
                                                         ELSE 0
                                                       END) interest
@@ -210,12 +223,27 @@ LEFT JOIN loan_settle s ON s.loanid = l.id
 LEFT JOIN interests i ON i.loanid = l.id
 WHERE l.`status` = 1 AND (l.amount- ifnull(s.amount,0) >0 OR  ifnull(i.pending_interest,0) > 10)
 ORDER BY b.name,l.opening_date
-"; 
+";  
 		$data = [];
 		foreach($db->query($sql)->results() as $obj){
 		  $data[] = $obj;
 		}
 		return $data;
 	}  
+
+
+  public function fetchUnsettledInterestConvertedLoans(){
+    global $db;
+    $sql = "SELECT b.name borrower, l.opening_date, l.amount, IFNULL(t.settled,0) settled, l.amount - IFNULL(t.settled, 0) balance FROM loans l
+LEFT JOIN borrowers b ON b.id = l.borrowerid
+LEFT JOIN (SELECT loanid, SUM(amount) settled FROM transactions WHERE transaction_type = 'R' GROUP by loanid) t ON t.loanid = l.id
+WHERE l.interest_loan > 0 
+ORDER BY b.`name` ";
+    $data = [];
+    foreach($db->query($sql)->results() as $obj){
+      $data[] = $obj;
+    }
+    return $data;
+  }
 
 }

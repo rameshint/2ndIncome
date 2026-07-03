@@ -9,12 +9,19 @@ $transactions = $loanObj->getAllTransactions($loanid);
 echo '
 <table class="w-100" style="margin-bottom: 3px"><tr>
 <td width="33.6%"><button data-id="'.$loanid.'" class="loan-edit btn btn-success w-100 "><strong>EDIT</strong></button> </td>
-<td width="33.6%"><button data-id="'.$loanid.'" class="loan-transfer btn btn-primary w-100 "><strong>TRANSFER</strong></button> </td>
-<td width="33.6%"><form action="loan_remove.php" onsubmit="return getConfirmation()" method="post">
-<input type="hidden" name="id" value="'.$loanid.'">
+';
+if($loan->interest_loan == 0){
+    echo '<td width="33.6%"><button data-id="'.$loanid.'" class="loan-transfer btn btn-primary w-100 "><strong>TRANSFER</strong></button> </td>
+    <td width="33.6%"><form action="loan_remove.php" onsubmit="return getConfirmation()" method="post"><input type="hidden" name="id" value="'.$loanid.'">
 <input type="hidden" name="borrowerid" value="'.$loan->borrowerid.'">
 <button type="submit" class="loan-remove btn btn-danger w-100"><strong>REMOVE</strong></button> </form>
-</td></tr></table>
+</td>
+    ';
+}
+
+echo '
+</tr></table>
+
 <table class=" table-striped w-100" cellpadding=3>
 <tr><th align="left">Lender</th><td>'.$loan->lender.'</td></tr>
 <tr><th align="left">Opening date</th><td>'.date($date_format,strtotime($loan->opening_date)).'</td></tr>

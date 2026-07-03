@@ -337,6 +337,13 @@ include_once 'config.ini.php';
                       <p>Lender Interest vs Settled</p>
                   </a>
               </li>
+              <li class="nav-item">
+                  <a href="report_unsettled_interest_converted_to_loans.php" class="nav-link">
+                      <i class="fas fa-retweet nav-icon"></i>
+                      <p>Interest Converted to Loans</p>
+                  </a>
+              </li>
+              
 
             </ul>
           </li>

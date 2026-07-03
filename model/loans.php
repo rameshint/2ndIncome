@@ -68,7 +68,8 @@ WHERE s.id = $id";
             $request['id'] = 1;
         } else {
             $status = $db->table($this->tablename)->insert($params);
-            $request['loanid'] = $db->lastInsertedId();
+            $loanid = $db->lastInsertedId();
+            $request['loanid'] = $loanid;
 			
 			$sql = "select current_balance from lenders where id = ". $request['lenderid'];
 			$row = $db->query($sql)->results()[0];
@@ -85,7 +86,7 @@ WHERE s.id = $id";
             $transactionObj = new transactions();
             $transactionObj->save($request);
         }
-        return $status;
+        return $loanid;
     }
 
     public function getAllTransactions($loanid)
@@ -135,7 +136,7 @@ WHERE s.id = $id";
                 ";
         $sql = "SELECT bid id,borrower, sum(amount - settled) amount, SUM(interest) interest FROM ( 
               SELECT l.id,b.id bid, b.name borrower, a.name lender, l.amount, sum(CASE WHEN t.transaction_type = 'R' THEN t.amount ELSE 0 END) settled, 
-              calculate_interest('C', l.amount,l.interest_value,l.interest_type,l.opening_date, case when l.closing_date IS NOT null then l.closing_date ELSE '$date' end) - sum(CASE WHEN t.transaction_type = 'R' THEN calculate_interest('C', t.amount,l.interest_value,l.interest_type,date_add(t.transaction_date, INTERVAL 1 DAY), case when l.closing_date IS NOT null then l.closing_date ELSE '$date' end) ELSE 0 END) - sum(CASE WHEN t.transaction_type = 'I' THEN t.amount ELSE 0 END) interest 
+              calculate_interest('C', l.amount,l.interest_value,l.interest_type,l.opening_date, case when l.closing_date IS NOT null then l.closing_date ELSE '$date' end) - sum(CASE WHEN t.transaction_type = 'R' THEN calculate_interest('C', t.amount,l.interest_value,l.interest_type,date_add(t.transaction_date, INTERVAL 1 DAY), case when l.closing_date IS NOT null then l.closing_date ELSE '$date' end) ELSE 0 END) - sum(CASE WHEN t.transaction_type = 'I'  AND IFNULL(t.parent_interest_id,0)=0 THEN t.amount ELSE 0 END) interest 
               FROM loans l 
               left join transactions t ON t.loanid = l.id AND case when t.transaction_type='R' AND t.transaction_date > '$date' then 0 ELSE 1 END = 1 and t.behalf_of = 0 
               left join lenders a ON a.id = l.lenderid 
@@ -144,6 +145,7 @@ WHERE s.id = $id";
               ) c 
               WHERE c.interest>0
               GROUP BY bid, borrower";
+         
         
 
         return $db->query($sql)->results();
@@ -186,12 +188,13 @@ WHERE s.id = $id";
                 GROUP  BY c.id)d 
                 LEFT JOIN (
 					 SELECT l.borrowerid  id, SUM(t.amount) collected_amount FROM loans l 
-					 INNER JOIN transactions t ON t.loanid = l.id  AND t.transaction_type = 'I' AND t.behalf_of = 0 AND t.waiver = 0
+					 INNER JOIN transactions t ON t.loanid = l.id  AND t.transaction_type = 'I' AND t.behalf_of = 0 AND t.waiver = 0 AND ifnull(t.converted_to_loan,0) = 0
 					 WHERE t.transaction_date BETWEEN '$collected_from' AND '$collected_to'
 					 GROUP BY l.borrowerid
 					 ) f ON f.id = d.id 
                 where d.interest > 0
                 ";
+                 
 
         return $db->query($sql)->results();
     }
@@ -257,4 +260,5 @@ from (SELECT c.id,c.lender,sum(c.amount)amount, sum(c.act_int ) act_int,sum(c.to
                 WHERE l.id = ". $loanid;
         return $db->query($sql)->results()[0];
     }
+
 }

@@ -319,21 +319,25 @@ $color = $colors[array_rand($colors)];
                                     <div class="modal-body">
                                         <div class="form-group">
                                             <label for="exampleInputAmount">Loan</label>
-                                            <select name="loanid" class="form-control" required>
+                                            <select name="loanid" class="form-control" id="repay_loanid" required>
                                                 <option value="">Choose</option>
                                                 <?php
                                                 foreach ($loans as $loan) {
                                                     if(($loan->amount - $loan->settled) > 0)
-                                                        echo '<option value="' . $loan->id . '" data-amount="'.($loan->amount - $loan->settled).'">'.$loan->id.'-->'. $loan->lender.' - '.($loan->amount - $loan->settled) . '</option>';
+                                                        echo '<option value="' . $loan->id . '" data-interest_to_loan="'.$loan->interest_loan.'" data-amount="'.($loan->amount - $loan->settled).'">'.$loan->id.'-->'. $loan->lender.' - '.($loan->amount - $loan->settled) . '</option>';
                                                 }
                                                 ?>
                                             </select>
                                         </div>
 
-                                        <div class="form-group">
-                                            <label for="repay-amount">Amount</label>
-                                            <input type="number" name="amount" class="form-control" required id="repay-amount">
+                                        
+                                        <div class='amount_section'>
+                                            
                                         </div>
+                                        <div class="form-group">
+                                                <label for="repay-amount">Amount</label>
+                                                <input type="number" name="amount" class="form-control" required id="repay-amount">
+                                            </div>
 
                                         <table width="100%">
                                             <tr>
@@ -506,7 +510,7 @@ $color = $colors[array_rand($colors)];
                             </div>
                             <!-- /.card-header -->
                                 <table class="table-striped w-100" cellpadding="5">
-                                <thead><tr><th width="5%">#</th><th width="10%">Opening Date</th><th width="10%">Closing Date</th><th>Lender</th><th width="10%">ROI</th><th width="10%">Loan Amount</th><th width="10%">Balance Amount</th><th width="10%">Pending Interest</th><th width="10%">Status</th></tr></thead>
+                                <thead><tr><th width="3%">#</th><th width="5%">Opening Date</th><th width="5%">Closing Date</th><th width="10%">Lender</th><th>Description</th><th width="5%">ROI</th><th width="5%">Loan Amount</th><th width="5%">Balance Amount</th><th width="5%">Pending Interest</th><th width="5%">Status</th></tr></thead>
                                     <tbody>
                                     <?php
                                     foreach ($loans as $loan){
@@ -516,6 +520,7 @@ $color = $colors[array_rand($colors)];
                                             <td>'.date('d/m/y', strtotime($loan->opening_date)).'</td>
                                             <td>'.($loan->closing_date!= '' ? date('d/m/y', strtotime($loan->closing_date)) : '').'</td>
                                             <td>'.$loan->lender.'</td>
+                                            <td title="'.htmlspecialchars($loan->description).'">'.htmlspecialchars(mb_strimwidth($loan->description, 0, 80, '...')).'</td>
                                             <td>'.$loan->roi.'</td>
                                             <td align="right">'.CurrencyFormat($loan->amount).'</td>
                                             <td align="right">'.CurrencyFormat(($loan->amount - $loan->settled)).'</td>
@@ -581,6 +586,36 @@ include 'footer.php';
     }
 
     $(document).ready(function(){
+
+        $("#repay_loanid").on("change", function(){
+            interestToLoan = $(this).find(':selected').data('interest_to_loan');
+            if(interestToLoan == 1) {
+                $.ajax({
+                    url: 'fetch_interest_loans.php',
+                    type: 'get',
+                    data: { "loanid": $(this).val() },
+                    dataType: 'json',
+                    success: function( data, textStatus, jQxhr ){
+                        $(".amount_section").html(''); // Clear previous entries
+                        interestList = '<b>Interest List</b><br /><table class="table table-bordered"><tr><th>Loan ID</th><th>Interest Amount</th><th>Amount to Settle</th></tr>';
+
+                        $(data).each(function(i, item){
+                            interestList += '<tr><td>'+item.loanid+'</td><td align="right">'+item.amount+'</td><td><input type="number" name="interest_loans['+item.id+']" max="'+item.amount+'" class="form-control interest-repay-amount" ></td></tr>';
+                        })
+                        interestList += '</table>';
+                        $(".amount_section").html(interestList);
+                    },
+                    error: function( jqXhr, textStatus, errorThrown ){
+                        console.log( errorThrown );
+                    }
+                })
+                $("#repay-amount").prop("readonly", true);
+            } else {
+                amount = $(this).find(':selected').data('amount')
+                $(".amount_section").html('');
+                $("#repay-amount").prop("readonly", false);
+            }
+        })
         $(".loan-row").click(function(){
             loanid = $(this).data('loanid');
             $.ajax({
@@ -758,6 +793,16 @@ include 'footer.php';
 				console.log('Something went wrong', err);
 			  });
 		});
+
+        $(document).on("blur", ".interest-repay-amount", function(){
+            total_amount = 0
+            $(document).find(".interest-repay-amount").each(function(){
+                 amount = parseFloat($(this).val()) || 0;
+                 total_amount += amount;
+            })
+ 
+            $("#repay-amount").val(total_amount);
+        })
 		
 		$("#repay-loan").on("click", function(){
 			navigator.clipboard.readText()

@@ -53,14 +53,19 @@ $borrowers = (new borrowers())->fetchall();
                 <div class="col-md-12" style="margin-bottom: 10px;">
                     <table class="w-100">
                         <tr>
-                            <td class="w-50">
+                            <td  width="33%">
                                 <button type="button" class="btn btn-success w-100" data-toggle="modal" id="credit-btn" data-target="#modal-credit">
                                     <strong>CREDIT</strong>
                                 </button>
                             </td>
-                            <td>
+                            <td  width="33%">
                                 <button type="button" class="btn btn-danger w-100" id="debit-btn" data-toggle="modal" data-target="#modal-debit">
                                     <strong>DEBIT</strong>
+                                </button>
+                            </td>
+                            <td  >
+                                <button type="button" class="btn btn-info w-100" id="interest-to-loan-btn" data-toggle="modal" data-target="#modal-interest-to-loan">
+                                    <strong>Interest to Loan</strong>
                                 </button>
                             </td>
                         </tr>
@@ -215,7 +220,87 @@ $borrowers = (new borrowers())->fetchall();
                     </div>
                     <!-- /.modal-dialog -->
                 </div>
+                <div class="modal fade" id="modal-interest-to-loan">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+                                <h4 class="modal-title">Convert interests to loan...</h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <form id="investment_form" action="investment_save.php" method="post">
+                                <input type="hidden" name="lenderid" value="<?=$_GET['id']?>">
+                                <input type="hidden" name="transaction_type" value="D">
+                                <input type="hidden" name="interest_to_loan" value="1">
+                                <div class="modal-body">
+                                    <div class="row">
+                                        <table width="100%" id="itl-table">
+                                            <thead>
+                                                <tr>
+                                                    <th width="55%">Borrower</th>
+                                                    <th width="35%">Amount</th>
+                                                    <th width="10%"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="itl-rows">
+                                                <tr class="itl-row">
+                                                    <td>
+                                                        <select name="borrower_id[]" class="form-control itl-borrower-select" style="width:100%">
+                                                            <option value="">Select Borrower</option>
+                                                            <?php foreach($borrowers as $borrower){ ?>
+                                                                <option value="<?=$borrower->id?>"><?=$borrower->name?></option>
+                                                            <?php } ?>
+                                                        </select>
+                                                    </td>
+                                                    <td>
+                                                        <input type="number" name="amount[]" class="form-control itl-amount" step=".01" min="0">
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <button type="button" class="btn btn-success btn-sm" id="add-itl-row"><i class="fas fa-plus"></i></button>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th class="text-right">Total</th>
+                                                    <th id="itl-total" class="text-right">0.00</th>
+                                                    <th></th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                       
+                                         
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_date">Txn Date</label>
+                                                <input type="date" name="txn_date" class="form-control" required id="debit_date" value="<?php echo date('Y-m-d')?>">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="form-group">
+                                                <label for="debit_bankdate">Bank Date</label>
+                                                <input type="date" name="bank_date" class="form-control" required id="debit_bankdate" value="<?php echo date('Y-m-d')?>">
+                                            </div>
+                                        </div>
+                                         
+                                        
+                                    </div>
+                                </div>
+                                <div class="modal-footer justify-content-between">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-danger">Save</button>
+                                </div>
+                            </form>
+                        </div>
+                        <!-- /.modal-content -->
+                    </div>
+                    <!-- /.modal-dialog -->
+                </div>
+             
             </div>
+            
             <div class="row">
                 <div class="col-md-12">
                 <div class="card">
@@ -411,5 +496,55 @@ $(document).ready(function(){
 			console.log('Something went wrong', err);
 		  });
 	});
+
+    // ---- Interest-to-Loan multi-row ----
+    var itlBorrowerOptions = <?php
+        $opts = '<option value="">Select Borrower</option>';
+        foreach($borrowers as $b){
+            $opts .= '<option value="'.intval($b->id).'">'.htmlspecialchars($b->name, ENT_QUOTES).'</option>';
+        }
+        echo json_encode($opts);
+    ?>;
+
+    function initItlSelect2(row) {
+        $(row).find('.itl-borrower-select').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Select Borrower',
+            allowClear: true,
+            dropdownParent: $('#modal-interest-to-loan')
+        });
+    }
+
+    function recalcItlTotal() {
+        var total = 0;
+        $('.itl-amount').each(function() {
+            total += parseFloat($(this).val()) || 0;
+        });
+        $('#itl-total').text(total.toFixed(2));
+    }
+
+    $('#modal-interest-to-loan').on('shown.bs.modal', function() {
+        initItlSelect2($('#itl-rows .itl-row').first());
+    });
+
+    $(document).on('click', '#add-itl-row', function() {
+        var newRow = '<tr class="itl-row">' +
+            '<td><select name="borrower_id[]" class="form-control itl-borrower-select" style="width:100%">' + itlBorrowerOptions + '</select></td>' +
+            '<td><input type="number" name="amount[]" class="form-control itl-amount" step=".01" min="0"></td>' +
+            '<td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-itl-row"><i class="fas fa-minus"></i></button></td>' +
+            '</tr>';
+        $('#itl-rows').append(newRow);
+        initItlSelect2($('#itl-rows .itl-row').last());
+    });
+
+    $(document).on('click', '.remove-itl-row', function() {
+        $(this).closest('tr').remove();
+        recalcItlTotal();
+    });
+
+    $(document).on('input', '.itl-amount', function() {
+        recalcItlTotal();
+    });
+
 });
 </script>

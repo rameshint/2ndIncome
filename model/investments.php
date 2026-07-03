@@ -1,4 +1,5 @@
 <?php
+ 
 include_once('vendor/autoload.php');
 use PHPtricks\Orm\Database;
 $db = Database::connect();
@@ -41,6 +42,50 @@ class investments
             }
             return true;
         }
+        return false;
+    }
+
+    public function interest_to_loan_save($request){
+        global $db;
+        $params = Array();
+        $total_amount = 0;
+        foreach ($request['borrower_id'] as $index => $borrower_id){
+           
+                $borrower_id = $borrower_id;
+                $amount = $request['amount'][$index];
+
+                
+                if($amount > 0){
+                    $params = [
+                        'lenderid' => $request['lenderid'], 
+                        'txn_date' => $request['txn_date'],
+                        'bank_date' => $request['bank_date'],
+                        'amount' => $amount,
+                        'transaction_type' => 'D',
+                        'transaction_category' => 'Interest', 
+                        'description' => 'Interest transferred to Loan for Accounting',
+                        'borrower_id' => $borrower_id
+                    ];
+                    (new investments())->save($params);
+                }
+                $total_amount += $amount;
+             
+        }
+
+        if($total_amount > 0) {
+            $params = [
+                'lenderid' => $request['lenderid'], 
+                'txn_date' => $request['txn_date'],
+                'bank_date' => $request['bank_date'],
+                'amount' => $total_amount,
+                'transaction_type' => 'C',
+                'transaction_category' => 'Loan', 
+                'description' => 'Interest transferred to Loan for Accounting' 
+            ];
+            (new investments())->save($params);
+        }
+ 
+ 
         return false;
     }
 }

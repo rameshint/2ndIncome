@@ -8,6 +8,7 @@
 
 ?>
 <input type="hidden" name="date" value="<?php echo $date ?>" />
+<input type="hidden" name="borrowerid" value="<?php echo $borrowerid ?>" />
 <table width="100%">
     <tr>
         <td width="50%">
@@ -36,24 +37,33 @@
 
 </div>
 <div class="row">
-    <div class="col-3">
+    <div class="col-6">
 <div class="form-check">
     <input type="checkbox" name="behalf_of" class="form-check-input"  id="behalf" value="1">
     <label class="form-check-label" for="behalf"> Behalf of  </label>
 </div>
     </div>
-    <div class="col-3">
+    <div class="col-6">
         <div class="form-check">
         <input type="checkbox" name="waiver" class="form-check-input"  id="waiver" value="1">
         <label class="form-check-label" for="waiver"> Waiver  </label>
         </div>
     </div>
+    </div>
+<div class="row">
     <div class="col-6">
         <div class="form-check">
         <input type="checkbox" name="converted_to_loan" class="form-check-input"  id="converted_to_loan" value="1">
         <label class="form-check-label" for="converted_to_loan"> Converting to Loan  </label>
         </div>
     </div>
+    <div class="col-6">
+        <div class="d-flex align-items-center">
+            <label class="form-check-label mr-2 mb-0" for="interest_rate">Interest Rate</label>
+            <input type="text" disabled name="interest_rate" class="form-control w-auto" id="interest_rate" style="width: 100px !important; " value="2.1">
+        </div>
+    </div>
+
 </div>
 <table class=" table-striped" cellpadding="5">
     <thead>
