@@ -10,6 +10,7 @@ $borrower = $borrowerObj->fetch($borrowerid);
 $total_loans = $borrowerObj->getTotalLoanDetails($borrowerid);
 $loans = $borrowerObj->getAllLoans($borrowerid);
 $color = $colors[array_rand($colors)];
+
 ?>
 <!-- Main content -->
 <section class="content">
@@ -87,7 +88,7 @@ $color = $colors[array_rand($colors)];
                                 <td class="text-right">
                                     <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_paid) ?></span>
                                 </td>
-                                <th>Interest Pending</th>
+                                <th>Interest Pending Till Date</th>
                                 <td class="text-right">
                                     <span class="badge bg-<?= $color ?> text-md interest-pending"><?= CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid) ?></span>
                                 </td>
@@ -103,45 +104,16 @@ $color = $colors[array_rand($colors)];
                                     <span class="badge bg-<?= $color ?> text-md pending-amount"><?= CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid)) ?></span>
                                 </td>
                             </tr>
+                            <tr>
+                                <th></th>
+                                <td></td>
+                                <th>Interest Pending as on Last Month <i onClick="sendWhatsApp('<?= $borrower->primary_contact_no ?>','<?= CurrencyFormat($total_loans->loan_borrow - $total_loans->loan_paid)?>','<?= CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid) ?>','<?= CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid)) ?>', '<?= CurrencyFormat($total_loans->total_interest_as_on_last_month - $total_loans->interest_paid) ?>')" class="fab fa-whatsapp" style="cursor:pointer; float:right"></i></th>
+                                <td class="text-right">
+                                    <span class="badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->total_interest_as_on_last_month - $total_loans->interest_paid) ?></span>
+                                </td>
+                            </tr>
                         </table>
-                        <ul class="nav flex-column " style="display: none;">
-                            <li class="nav-item">
-                                <span class="nav-link">
-                                    Loan Amount <span
-                                            class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow) ?></span>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <span class="nav-link">
-                                    Loan Paid <span
-                                            class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_paid) ?></span>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <span class="nav-link">
-                                    Loan Pending <span
-                                            class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->loan_borrow - $total_loans->loan_paid) ?></span>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <span class="nav-link">
-                                    Interest Paid <span
-                                            class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->interest_paid) ?></span>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <span class="nav-link">
-                                    Interest Pending <span
-                                            class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid) ?></span>
-                                </span>
-                            </li>
-                            <li class="nav-item">
-                                <span class="nav-link">
-                                    Pending Amount till date <span
-                                            class="float-right badge bg-<?= $color ?> text-md"><?= CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid)) ?></span>
-                                </span>
-                            </li>
-                        </ul>
+                        
                     </div>
                 </div>
                 <div class="row">
@@ -387,103 +359,83 @@ $color = $colors[array_rand($colors)];
                                     <input type="hidden" name="borrowerid" value="<?= $borrowerid ?>">
                                     <input type="hidden" name="id" value="">
                                     <div class="modal-body">
-                                        <table width="100%">
-                                            <tr>
-                                                <td width="33.66%">
-                                                    <div class="form-group">
-                                                        <label for="exampleInputAmount">Lender</label>
-                                                        <select name="lenderid" id="loan-lenderid" class="form-control" required>
-                                                            <option value="">Choose</option>
-                                                            <?php
-                                                            $lenders = $lenderObj->fetchall();
-                                                            foreach ($lenders as $lender) {
-                                                                echo '<option value="' . $lender->id . '">' . $lender->name . '</option>';
-                                                            }
-                                                            ?>
-                                                        </select>
-                                                    </div>
-                                                </td>
-                                                <td width="33.66%">
-                                                    <div class="form-group">
-                                                        <label for="loan-amount">Amount</label>
-                                                        <input type="number" name="amount" class="form-control"
-                                                               required id="loan-amount">
-                                                    </div>
-                                                </td>
-                                                <td width="33.66%">
-                                                    <div class="form-group">
-                                                        <label for="loan-interest_to_loan-to-loan">Interest to Loan</label>
-                                                        <input type="checkbox" name="interest_loan" class="form-control"
-                                                             value="1" id="loan-interest_to_loan-to-loan">
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                            <tr class="text-danger">
-                                                <td width="50%" style="text-align: right">
-                                                    <strong>Current Balance</strong>
-                                                </td>
-                                                <th id="loan-lender-balance" style="text-align: center;font-size: x-large;">0.00
-                                                </th>
-                                            </tr>
-                                        </table>
-
-
-                                        <table width="100%">
-                                            <tr>
-                                                <td width="33.66%">
-                                                    <div class="form-group">
-                                                        <label for="exampleInputROIType">Type of Interest</label>
-                                                        <select name="interest_type" class="form-control"
-                                                                id="exampleInputROIType">
-                                                            <option value="P">Percentage</option>
-                                                            <option value="F">Fixed</option>
-                                                        </select>
-                                                    </div>
-                                                </td>
-                                                <td width="33.66%">
-                                                    <div class="form-group">
-                                                        <label for="exampleInputROI">ROI</label>
-                                                        <input type="number" step="any" name="interest_value"
-                                                               class="form-control" required id="exampleInputROI">
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="form-group">
-                                                        <label for="exampleInputComm">Commission</label>
-                                                        <input type="number" step="any" name="commission"
-                                                               class="form-control" required id="exampleInputComm">
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        <table width="100%">
-                                            <tr>
-                                                <td width="33.66%">
-                                                    <div class="form-group">
-                                                        <label for="exampleInputTxnDate">Txn Date</label>
-                                                        <input type="date" name="opening_date" class="form-control"
-                                                               required id="loan-txn-date"
-                                                               value="<?php echo date("Y-m-d") ?>">
-                                                    </div>
-                                                </td>
-                                                <td width="33.66%">
-                                                    <div class="form-group">
-                                                        <label for="exampleInputBankDate">Bank Date</label>
-                                                        <input type="date" name="bank_date" class="form-control"
-                                                               id="loan-bank-date"
-                                                               value="<?php echo date("Y-m-d") ?>">
-                                                    </div>
-                                                </td>
-                                                <td width="33%">
-                                                    <div class="form-group">
-                                                        <label for="exampleInputBankDate">Agreed Closing Date</label>
-                                                        <input type="date" name="agreed_closing_date"
-                                                               class="form-control" id="loan-agreed-date"
-                                                               value="<?php echo date("Y-m-d") ?>">
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </table>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label for="exampleInputAmount">Lender</label>
+                                                <select name="lenderid" id="loan-lenderid" class="form-control" required>
+                                                    <option value="">Choose</option>
+                                                    <?php
+                                                    $lenders = $lenderObj->fetchall();
+                                                    foreach ($lenders as $lender) {
+                                                        echo '<option value="' . $lender->id . '">' . $lender->name . '</option>';
+                                                    }
+                                                    ?>
+                                                </select>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label for="loan-amount">Amount</label>
+                                                <input type="number" name="amount" class="form-control"
+                                                       required id="loan-amount">
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="loan-bad-debt">Bad Debt</label>
+                                                <input type="checkbox" name="bad_debt" class="form-control"
+                                                     value="1" id="loan-bad-debt">
+                                            </div>
+                                            <div class="form-group col-md-2">
+                                                <label for="loan-interest_to_loan-to-loan">Interest to Loan</label>
+                                                <input type="checkbox" name="interest_loan" class="form-control"
+                                                     value="1" id="loan-interest_to_loan-to-loan">
+                                            </div>
+                                        </div>
+                                        <div class="form-row align-items-center text-danger mb-3">
+                                            <div class="col-md-4 text-right">
+                                                <strong>Current Balance</strong>
+                                            </div>
+                                            <div class="col-md-8 text-left">
+                                                <strong id="loan-lender-balance" style="font-size: x-large;">0.00</strong>
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label for="exampleInputROIType">Type of Interest</label>
+                                                <select name="interest_type" class="form-control"
+                                                        id="exampleInputROIType">
+                                                    <option value="P">Percentage</option>
+                                                    <option value="F">Fixed</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label for="exampleInputROI">ROI</label>
+                                                <input type="number" step="any" name="interest_value"
+                                                       class="form-control" required id="exampleInputROI">
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label for="exampleInputComm">Commission</label>
+                                                <input type="number" step="any" name="commission"
+                                                       class="form-control" required id="exampleInputComm">
+                                            </div>
+                                        </div>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4">
+                                                <label for="exampleInputTxnDate">Txn Date</label>
+                                                <input type="date" name="opening_date" class="form-control"
+                                                       required id="loan-txn-date"
+                                                       value="<?php echo date("Y-m-d") ?>">
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label for="exampleInputBankDate">Bank Date</label>
+                                                <input type="date" name="bank_date" class="form-control"
+                                                       id="loan-bank-date"
+                                                       value="<?php echo date("Y-m-d") ?>">
+                                            </div>
+                                            <div class="form-group col-md-4">
+                                                <label for="loan-agreed-date">Agreed Closing Date</label>
+                                                <input type="date" name="agreed_closing_date"
+                                                       class="form-control" id="loan-agreed-date"
+                                                       value="<?php echo date("Y-m-d") ?>">
+                                            </div>
+                                        </div>
                                         <div class="form-group">
                                             <label for="newloan-description">Narration</label>
                                             <input type="text" name="description" class="form-control" required
@@ -514,6 +466,13 @@ $color = $colors[array_rand($colors)];
                                     <tbody>
                                     <?php
                                     foreach ($loans as $loan){
+                                        if($loan->bad_debt == 1){
+                                            $status = '<span class="badge badge-danger">Bad Debt</span>';
+                                        } else if($loan->closing_date != ''){
+                                            $status = '<span class="badge badge-secondary">Closed</span>';
+                                        } else {
+                                            $status = '<span class="badge badge-success">Active</span>';
+                                        }
 
                                         echo '<tr style="cursor:pointer" class="loan-row" data-loanid="'.$loan->id.'">
                                              <td>'.$loan->id.'</td>
@@ -525,7 +484,7 @@ $color = $colors[array_rand($colors)];
                                             <td align="right">'.CurrencyFormat($loan->amount).'</td>
                                             <td align="right">'.CurrencyFormat(($loan->amount - $loan->settled)).'</td>
                                             <td align="right">'.CurrencyFormat(($loan->total_interest - $loan->interest_paid)).'</td>
-                                            <td align="center">'.($loan->closing_date!='' ? '<span class="badge badge-success">Closed</span>' : '<span class="badge badge-info">Active</span>').'</td>
+                                            <td align="center">'.$status.'</td>
                                             </tr>';
                                     }
                                     ?>
@@ -657,6 +616,7 @@ include 'footer.php';
                     $("#loan_form").find('input[name="bank_date"]').val(data.bank_date);
                     $("#loan_form").find('input[name="agreed_closing_date"]').val(data.agreed_closing_date);
                     $("#loan_form").find('input[name="description"]').val(data.description);
+                    $("#loan_form").find('input[name="bad_debt"]').prop('checked', data.bad_debt == 1);
                     $("#modal-loan").modal('show')
                 },
                 error: function( jqXhr, textStatus, errorThrown ){
@@ -767,6 +727,20 @@ include 'footer.php';
         return balance;
     }
 	
+    function sendWhatsApp(phone_number, loan_pending, interest_pending_till_date, total_pending, interest_pending_as_on_last_month, interest_paid){
+        if (phone_number == '') {
+            alert('Primary contact number is not available for this borrower');
+            return;
+        }else if (phone_number.length < 10) {
+            alert('Primary contact number is not valid for this borrower');
+            return;
+        }else if (phone_number.length == 10) {
+            phone_number = '91' + phone_number;
+        }
+        message = 'Loan Pending : '+loan_pending+'%0AInterest Pending till Date : '+interest_pending_till_date+'%0ATotal Pending : '+total_pending+'%0AInterest Pending as on Last Month : '+interest_pending_as_on_last_month
+        window.open('https://wa.me/'+phone_number+'?text='+message, '_blank');
+    }
+
 	$(document).ready(function(){
 		$("#new-loan").on("click", function(){
 			navigator.clipboard.readText()

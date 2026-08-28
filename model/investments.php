@@ -22,7 +22,7 @@ class investments
         global $db;
         $params = Array();
 
-        echo $sql = "select net_investment from lenders where id =".$request['lenderid'];
+        $sql = "select net_investment from lenders where id =".$request['lenderid'];
         $lender = $db->query($sql)->results()[0];
         $request['current_balance'] = $lender->net_investment;
 

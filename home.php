@@ -29,6 +29,7 @@ include 'header.php';
                                         <th width="15%" style="text-align: center">Investment</th>
                                         <th width="15%" style="text-align: center">Loan given</th>
                                         <th width="15%" style="text-align: center">Balance</th>
+                                        <th width="15%" style="text-align: center">Bad Debt</th>
                                     </tr>
                                 </table>
                             </div>
@@ -349,20 +350,24 @@ include 'footer.php';
                 total_invesment = 0;
                 total_given = 0;
                 total_balance = 0;
+                total_bad_debt = 0;
                 $.each(data, function (key, value) {
                     el.append('<tr><td>' + value.account + '</td>' +
-                        '<td style="text-align: right">' + value.invesment + '</td>' +
-                        '<td style="text-align: right">' + value.given + '</td>' +
-                        '<td style="text-align: right">' + value.balance + '</td></tr>')
+                        '<td style="text-align: right">' + (value.invesment) + '</td>' +
+                        '<td style="text-align: right">' + (value.given) + '</td>' +
+                        '<td style="text-align: right">' + value.balance + '</td>' +
+                        '<td style="text-align: right">' + value.bad_debt + '</td></tr>')
                     total_invesment += parseFloat(value.invesment)
                     total_given += parseFloat(value.given)
                     total_balance += parseFloat(value.balance)
+                    total_bad_debt += parseFloat(value.bad_debt)
 
                 })
                 el.append('<tr><th style="text-align: right">Total</th>' +
                     '<th style="text-align: right">' + total_invesment.toFixed(2) + '</th>' +
                     '<th style="text-align: right">' + total_given.toFixed(2) + '</th>' +
-                    '<th style="text-align: right">' + total_balance.toFixed(2) + '</th></tr>')
+                    '<th style="text-align: right">' + total_balance.toFixed(2) + '</th>' +
+                    '<th style="text-align: right">' + total_bad_debt.toFixed(2) + '</th></tr>')
                 $('.current-balance-value').text(total_balance.toFixed(2))
             },
             error: function (jqXhr, textStatus, errorThrown) {

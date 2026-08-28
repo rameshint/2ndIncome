@@ -10,7 +10,7 @@ SELECT l.id,a.name lender , b.name borrower, if(l.loan_opening_date is not null,
 left JOIN (select loanid,sum(amount) amount from transactions WHERE transaction_type = 'R' GROUP BY loanid) t ON l.id = t.loanid 
 LEFT JOIN lenders a ON a.id = l.lenderid
 LEFT JOIN borrowers b ON b.id = l.borrowerid
-WHERE l.closing_date IS null and l.status = 1
+WHERE l.closing_date IS null and l.status = 1 AND l.interest_loan=0
 GROUP BY a.name,l.id WITH ROLLUP ) c , (SELECT @rowid:=0) as init
 ORDER BY rowid desc
             ";
@@ -136,13 +136,24 @@ select * from (SELECT c.id,c.lender, c.borrower,c.opening_date, c.roi,sum(c.amou
 INNER JOIN borrowers b ON b.id = l.borrowerid
 INNER JOIN lenders a ON a.id = l.lenderid
 LEFT JOIN (SELECT loanid, SUM(amount) settled FROM transactions t WHERE t.transaction_type='R'  GROUP BY t.loanid) s ON s.loanid = l.id
-WHERE closing_date IS NULL AND l.status = 1 AND l.agreed_closing_date <= NOW() ORDER BY opening_date";
+WHERE closing_date IS NULL AND l.status = 1 and l.bad_debt = 0 AND l.agreed_closing_date <= NOW() ORDER BY opening_date";
 		$loans = [];
 		foreach($db->query($sql)->results() as $obj){
 			$loans[$obj->borrower][] = $obj;
 		}
 		return $loans;
 	}
+
+  public function badLoans(){
+    global $db;
+    $sql = "SELECT a.`name` lender, b.name borrower,l.opening_date, l.amount, ifnull(t.settled,0) settled, ifnull(i.interest_settled,0) interest_settled FROM loans l 
+LEFT JOIN (SELECT loanid, SUM(amount) settled FROM transactions WHERE transaction_type = 'R') t on l.id = t.loanid 
+LEFT JOIN (SELECT loanid, SUM(amount) interest_settled FROM transactions WHERE transaction_type = 'I' AND behalf_of=0 AND waiver=0 AND converted_to_loan = 0) i on l.id = i.loanid 
+LEFT JOIN borrowers b ON b.id = l.borrowerid
+LEFT JOIN lenders a ON a.id = l.lenderid
+WHERE l.bad_debt = 1";
+    return $db->query($sql)->results();
+  }
 
   public function OneYearSettledInterest(){
 		global $db;

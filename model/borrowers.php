@@ -59,38 +59,82 @@ class borrowers
     public function getTotalLoanDetails($borrowerid)
     {
         global $db;
-        $sql = "SELECT SUM(amount) loan_borrow,SUM(settled) loan_paid, SUM(interest_paid) interest_paid, SUM(total_interest) total_interest FROM (
- SELECT l.id,l.interest_type,l.interest_value,
-       a.name                                  lender,
-       case when t.transaction_type = 'B' AND narration NOT LIKE 'Loan transferred from%' then l.amount ELSE 0 end amount,
-       
-       sum(CASE
-             WHEN t.transaction_type = 'R'  AND narration NOT LIKE 'Loan transferred to%' THEN t.amount
-             ELSE 0
-           END)                               settled,
-       	calculate_interest('C', l.amount,l.interest_value,l.interest_type,l.opening_date, l.closing_date) -
-		  	sum(CASE  WHEN t.transaction_type = 'R' THEN  
-			  calculate_interest('C', t.amount,l.interest_value,l.interest_type,date_add(t.transaction_date, INTERVAL 1 DAY),l.closing_date) 
-                             ELSE 0
-                           END)   - SUM(CASE WHEN t.transaction_type = 'I' AND t.waiver = 1 thEN t.amount ELSE 0 END) total_interest,
-                                      sum(CASE
-                                        WHEN t.transaction_type = 'I' AND t.waiver = 0  AND ifnull(t.parent_interest_id,0) = 0 THEN
-                                        t.amount
-                                        ELSE 0
-                                      END) interest_paid,
-
-					       l.opening_date,
-			       l.closing_date,
-       l.agreed_closing_date
-FROM   loans l
-       left join transactions t
-              ON t.loanid = l.id and t.behalf_of = 0 
-       left join lenders a
-              ON a.id = l.lenderid
-WHERE  l.borrowerid = $borrowerid and l.status= 1
-GROUP  BY l.id
-ORDER  BY l.opening_date DESC 
-) a ";
+        $sql = "SELECT
+	SUM(amount) loan_borrow,
+	SUM(settled) loan_paid,
+	SUM(interest_paid) interest_paid,
+	SUM(total_interest) total_interest,
+	SUM(total_interest_as_on_last_month) total_interest_as_on_last_month
+FROM
+	(
+		SELECT
+			l.id,
+			l.interest_type,
+			l.interest_value,
+			a.name lender,
+			CASE WHEN t.transaction_type = 'B'
+			AND narration NOT LIKE 'Loan transferred from%' THEN l.amount ELSE 0 END amount,
+			SUM(
+				CASE WHEN t.transaction_type = 'R'
+				AND narration NOT LIKE 'Loan transferred to%' THEN t.amount ELSE 0 END
+			) settled,
+			calculate_interest(
+				'C', l.amount, l.interest_value, l.interest_type,
+				l.opening_date, l.closing_date
+			) - SUM(
+				CASE WHEN t.transaction_type = 'R' THEN calculate_interest(
+					'C',
+					t.amount,
+					l.interest_value,
+					l.interest_type,
+					DATE_ADD(
+						t.transaction_date, INTERVAL 1 DAY
+					),
+					l.closing_date
+				) ELSE 0 END
+			) - SUM(
+				CASE WHEN t.transaction_type = 'I'
+				AND t.waiver = 1 THEN t.amount ELSE 0 END
+			) total_interest,
+			SUM(
+				CASE WHEN t.transaction_type = 'I'
+				AND t.waiver = 0
+				AND IFNULL(t.parent_interest_id, 0) = 0 THEN t.amount ELSE 0 END
+			) interest_paid,
+			calculate_interest(
+				'C', l.amount, l.interest_value, l.interest_type,
+				l.opening_date,ifnull(l.closing_date,LAST_DAY(NOW() - INTERVAL 1 MONTH))
+			) - SUM(
+				CASE WHEN t.transaction_type = 'R' THEN calculate_interest(
+					'C',
+					t.amount,
+					l.interest_value,
+					l.interest_type,
+					DATE_ADD(
+						t.transaction_date, INTERVAL 1 DAY
+					),
+					l.closing_date
+				) ELSE 0 END
+			) - SUM(
+				CASE WHEN t.transaction_type = 'I'
+				AND t.waiver = 1 THEN t.amount ELSE 0 END
+			) total_interest_as_on_last_month,
+			l.opening_date,
+			l.closing_date,
+			l.agreed_closing_date
+		FROM
+			loans l
+			LEFT JOIN transactions t ON t.loanid = l.id
+			AND t.behalf_of = 0
+			LEFT JOIN lenders a ON a.id = l.lenderid
+		WHERE
+			l.borrowerid = $borrowerid
+			AND l.status = 1
+		GROUP BY
+			l.id
+		ORDER BY
+			l.opening_date DESC
+	) a";
  
 
         return $db->query($sql)->results()[0];
@@ -106,6 +150,7 @@ ORDER  BY l.opening_date DESC
        l.interest_value roi,
        l.description,
        l.interest_loan,
+       l.bad_debt,
        sum(CASE
              WHEN t.transaction_type = 'R' THEN t.amount
              ELSE 0

@@ -127,8 +127,19 @@ if ($lenderId > 0) {
                         <?php if (empty($rows)): ?>
                             <tr><td colspan="5" class="text-center text-muted">No data found for the selected filters.</td></tr>
                         <?php else: ?>
+                            <?php
+                                $positive_net = 0;
+                                $negative_net = 0;
+                            ?>
                             <?php $i = 1; foreach ($rows as $row): ?>
                                 <?php $netClass = $row['net'] > 0 ? 'text-success' : ($row['net'] < 0 ? 'text-danger' : ''); ?>
+                                <?php 
+                                    if ($row['net'] > 0) {
+                                        $positive_net += $row['net'];
+                                    } elseif ($row['net'] < 0) {
+                                        $negative_net += abs($row['net']);
+                                    }
+                                ?>
                                 <tr class="borrower-summary-row" data-target="detail-<?= $row['id'] ?>" style="cursor:pointer;">
                                     <td><?= $i++ ?></td>
                                     <td>
@@ -178,12 +189,17 @@ if ($lenderId > 0) {
                             <th class="text-right"><?= number_format($totals['debit'], 2) ?></th>
                             <th class="text-right"><?= number_format($totals['credit'], 2) ?></th>
                             <th class="text-right <?= $totalNet >= 0 ? 'text-success' : 'text-danger' ?>">
-                                <?= number_format($totalNet, 2) ?>
+                               <?=  number_format($totalNet, 2) ?>
                             </th>
                         </tr>
                     </tfoot>
                     <?php endif; ?>
                 </table>
+                    <!-- Print Positive and Negative Net Totals and align right  -->
+                    <div class="mt-3 text-right mr-3">
+                        <p class="text-success">Total Positive Net: <?= number_format($positive_net, 2) ?></p>
+                        <p class="text-danger">Total Negative Net: <?= number_format($negative_net, 2) ?></p>
+                    </div>
             </div>
         </div>
         <?php endif; ?>

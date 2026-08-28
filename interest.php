@@ -77,6 +77,7 @@ if($_REQUEST['date']!=''){
 
     </div>
 </section>
+
 <?php
 include_once 'footer.php';
 ?>
@@ -103,6 +104,21 @@ include_once 'footer.php';
 
     function copyInterest(interest){
         navigator.clipboard.writeText(interest + ' Interest')
+    }
+
+    function sendWhatsApp(message, primary_contact_no){
+        if (primary_contact_no == '') {
+            alert('Primary contact number is not available for this borrower');
+            return;
+        }else if (primary_contact_no.length < 10) {
+            alert('Primary contact number is not valid for this borrower');
+            return;
+        }else if (primary_contact_no.length == 10) {
+            primary_contact_no = '91' + primary_contact_no;
+        }
+        navigator.clipboard.writeText(message)
+        var waTab = window.open('https://wa.me/'+primary_contact_no+'?text='+message, '_blank');
+        setTimeout(function() { if (waTab) waTab.close(); }, 2000);
     }
 
     function payInterest(id, name) {

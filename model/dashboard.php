@@ -6,7 +6,7 @@ class dashboard{
     public function getCurrentBalance(){
         global $db;
         $sql = "SELECT * FROM (
-                SELECT a.lender account,a.amount invesment , ifnull(d.amount,0) given,  a.amount - ifnull(d.amount,0) balance 
+                SELECT a.lender account,a.amount -d.bad_debt  invesment , ifnull(d.amount,0) given,  a.amount -d.bad_debt - ifnull(d.amount,0) balance, d.bad_debt 
                 FROM (
                 SELECT i.lenderid,l.name lender, sum(case when i.transaction_type = 'D' then -amount ELSE amount END ) amount FROM investments i 
                 INNER JOIN lenders l ON l.id = i.lenderid
@@ -14,13 +14,13 @@ class dashboard{
                 order by i.lenderid
                 ) a
                 LEFT JOIN (
-                SELECT l.lenderid , sum(l.amount - ifnull(t.amount, 0)) amount FROM loans l
+                SELECT l.lenderid , sum(case when l.bad_debt = 0 then (l.amount - ifnull(t.amount, 0)) ELSE 0 END) amount, sum(case when l.bad_debt = 1 then (l.amount - ifnull(t.amount, 0)) ELSE 0 END) bad_debt FROM loans l
                 LEFT JOIN (select loanid, sum(amount) amount from transactions WHERE transaction_type = 'R' GROUP BY loanid) t  ON l.id = t.loanid
                 where l.status = 1
                 GROUP BY l.lenderid
                 ) d ON d.lenderid = a.lenderid
                 UNION ALL 
-                SELECT 'Unsettled Interest' account,0 invesment,0 given, sum(amount) balance FROM transactions t WHERE t.flag = 0 AND t.transaction_type IN ('E','I') and waiver = 0
+                SELECT 'Unsettled Interest' account,0 invesment,0 given, sum(amount) balance, 0 bad_debt FROM transactions t WHERE t.flag = 0 AND t.transaction_type IN ('E','I') and waiver = 0
                 ) v WHERE invesment <>0 OR given <> 0 OR balance <> 0";
         return $db->query($sql)->results();
     }
