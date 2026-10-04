@@ -149,6 +149,7 @@ WHERE s.id = $id";
               ) c 
               WHERE c.interest>0
               GROUP BY bid, borrower";
+        
          
 
         return $db->query($sql)->results();

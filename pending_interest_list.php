@@ -20,7 +20,8 @@ foreach ($borrowers as $borrower){
     $interest_pending_till_date = CurrencyFormat($total_loans->total_interest - $total_loans->interest_paid);
     $total_pending = CurrencyFormat(($total_loans->total_interest - $total_loans->interest_paid) + ($total_loans->loan_borrow - $total_loans->loan_paid));
     $interest_pending_as_on_last_month = CurrencyFormat($total_loans->total_interest_as_on_last_month - $total_loans->interest_paid);
-    $message = 'Loan Pending : '.$loan_pending.'%0AInterest Pending till Date : '.$interest_pending_till_date.'%0ATotal Pending : '.$total_pending.'%0AInterest Pending as on '.$date.' : '.$interest_pending_as_on_last_month . ' (To be paid)';
+    $message = 'Loan: '.$loan_pending.'%0AInterest Pending till Date : '.$interest_pending_till_date.'%0ATotal Pending : '.$total_pending.'%0AInterest Pending as on '.$date.' : '.$interest_pending_as_on_last_month . ' (To be paid)';
+    $message = "Loan: ".$loan_pending."%0AInterest: ".$interest_pending_as_on_last_month;
     $interest_message = CurrencyFormat($borrower->interest).' Interest';
     echo '<tr style="cursor:pointer" ><td onclick="payInterest('.$borrower->id.', \''.$borrower->borrower.'\')">'.$borrower->borrower.'</td>
     <td>'.$borrower->primary_contact_no.'</td>

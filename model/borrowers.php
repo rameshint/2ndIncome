@@ -102,11 +102,11 @@ FROM
 				AND IFNULL(t.parent_interest_id, 0) = 0 THEN t.amount ELSE 0 END
 			) interest_paid,
 			calculate_interest(
-				'C', l.amount, l.interest_value, l.interest_type,
-				l.opening_date,ifnull(l.closing_date,LAST_DAY(NOW() - INTERVAL 1 MONTH))
+				'L', l.amount, l.interest_value, l.interest_type,
+				l.opening_date, l.closing_date
 			) - SUM(
 				CASE WHEN t.transaction_type = 'R' THEN calculate_interest(
-					'C',
+					'L',
 					t.amount,
 					l.interest_value,
 					l.interest_type,
@@ -135,7 +135,7 @@ FROM
 		ORDER BY
 			l.opening_date DESC
 	) a";
- 
+
 
         return $db->query($sql)->results()[0];
     }
